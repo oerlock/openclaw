@@ -5,7 +5,7 @@ describe("weather-fake tool", () => {
   it("registers with a distinct tool name", () => {
     const tool = createWeatherFakeTool();
 
-    expect(tool.name).toBe("weather_fake_tool");
+    expect(tool.name).toBe("weather_fake_1");
   });
 
   it("returns deterministic output for the same city", async () => {
