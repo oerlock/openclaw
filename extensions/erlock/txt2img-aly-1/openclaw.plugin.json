@@ -1,0 +1,10 @@
+{
+  "id": "txt2img-aly-1",
+  "name": "Txt2Img Aly 1",
+  "description": "Demo txt2img extension for qwen-image-max.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
