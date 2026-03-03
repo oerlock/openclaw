@@ -1,13 +1,8 @@
-# Txt2Img Aly 1
+# Txt2Img Aly
 
 Demo OpenClaw plugin that provides `txt2img_aly` tool for Aliyun qwen-image-max.
 
-## Required env
-
-- `OPENCLAW_ALY_API_KEY`
-- `OPENCLAW_ALY_BASE_URL` (optional, defaults to DashScope image endpoint)
-
-You can also set `apiKey` and `baseUrl` in plugin config. Plugin config takes precedence over env vars.
+You must set `apiKey` and `baseUrl` in plugin config. Plugin config takes precedence over env vars.
 
 ## Tool contract
 
@@ -20,5 +15,5 @@ You can also set `apiKey` and `baseUrl` in plugin config. Plugin config takes pr
 ## Development
 
 ```bash
-pnpm test extensions/erlock/txt2img-aly-1/index.test.ts
+pnpm test extensions/txt2img-aly/index.test.ts
 ```

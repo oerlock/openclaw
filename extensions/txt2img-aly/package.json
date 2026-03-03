@@ -1,0 +1,16 @@
+{
+  "name": "@openclaw/txt2img-aly",
+  "version": "2026.3.3",
+  "description": "txt2img tool for aly",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "install": {
+      "npmSpec": "@openclaw/txt2img-aly",
+      "localPath": "extensions/erlock/txt2img-aly",
+      "defaultChoice": "local"
+    }
+  }
+}
