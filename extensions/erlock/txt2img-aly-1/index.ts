@@ -1,4 +1,4 @@
-import type { AnyAgentTool, OpenClawPluginApi } from "../../src/plugins/types.js";
+import type {AnyAgentTool, OpenClawPluginApi} from "../../src/plugins/types.js";
 
 type Txt2ImgArgs = {
   model: string;
@@ -16,8 +16,6 @@ type Txt2ImgArgs = {
   };
 };
 
-const DEFAULT_BASE_URL =
-  "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis";
 const ALLOWED_SIZES = new Set(["1664*928", "1472*1104", "1328*1328", "1104*1472", "928*1664"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -62,7 +60,7 @@ function parseArgs(raw: unknown): Txt2ImgArgs {
   const parsed: Txt2ImgArgs = {
     model,
     input_: {
-      messages: [{ role: "user", content: [{ text }] }],
+      messages: [{role: "user", content: [{text}]}],
     },
   };
 
@@ -137,51 +135,111 @@ function extractImageUrls(payload: Record<string, unknown>): string[] {
 
 function errorResult(message: string) {
   return {
-    content: [{ type: "text" as const, text: message }],
+    content: [{type: "text" as const, text: message}],
     isError: true,
   };
 }
 
-export function createTxt2ImgAlyTool(): AnyAgentTool {
+function createTxt2ImgAlyTool(options: {
+  apiKey: string;
+  baseUrl: string;
+}): AnyAgentTool {
+  const {apiKey, baseUrl} = options;
+
   return {
     name: "txt2img_aly",
-    description: "基于文本生成图片。在各类生成任务中表现优于 `txt2img` 工具。",
+    description: "基于文本生成图片。",
     parameters: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        model: {
-          type: "string",
-          description: "模型名称，例如 qwen-image-max",
+      "properties": {
+        "model": {"description": "模型名称，例如 qwen-image-max", "type": "string"},
+        "input_": {
+          "properties": {
+            "messages": {
+              "description": "请求内容数组，仅支持单轮对话",
+              "items": {
+                "properties": {
+                  "role": {
+                    "const": "user",
+                    "description": "消息角色，必须为 user",
+                    "type": "string"
+                  },
+                  "content": {
+                    "description": "消息内容数组，仅允许一个 text",
+                    "items": {
+                      "properties": {
+                        "text": {
+                          "description": "正向提示词，用于描述期望生成的图像内容、风格和构图。支持中英文，最长800字符。",
+                          "maxLength": 800,
+                          "type": "string"
+                        }
+                      }, "required": ["text"], "type": "object"
+                    },
+                    "maxItems": 1,
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                }, "required": ["role", "content"], "type": "object"
+              },
+              "maxItems": 1,
+              "minItems": 1,
+              "type": "array"
+            }
+          }, "required": ["messages"], "type": "object", "description": "输入基本信息"
         },
-        input_: {
-          type: "object",
-          description: "输入基本信息，仅支持单轮 user text",
-        },
-        parameters: {
-          type: "object",
-          description: "图像生成参数（negative_prompt、size、n、seed）",
-        },
-      },
-      required: ["model", "input_"],
+        "parameters": {
+          "anyOf": [{
+            "properties": {
+              "negative_prompt": {
+                "anyOf": [{
+                  "maxLength": 500,
+                  "type": "string"
+                }, {"type": "null"}],
+                "default": null,
+                "description": "反向提示词，最长500字符",
+                "title": "Negative Prompt"
+              },
+              "size": {
+                "anyOf": [{
+                  "enum": ["1664*928", "1472*1104", "1328*1328", "1104*1472", "928*1664"],
+                  "type": "string"
+                }, {"type": "null"}], "default": null, "description": "输出图像分辨率", "title": "Size"
+              },
+              "n": {
+                "anyOf": [{"const": 1, "type": "integer"}, {"type": "null"}],
+                "default": null,
+                "description": "生成图像数量，仅支持1",
+                "title": "N"
+              },
+              "seed": {
+                "anyOf": [{"exclusiveMaximum": 2147483648, "minimum": 0, "type": "integer"}, {"type": "null"}],
+                "default": null,
+                "description": "随机种子，范围[0,2147483647]",
+                "title": "Seed"
+              }
+            }, "title": "Parameters", "type": "object"
+          }, {"type": "null"}], "default": null, "description": "图像生成参数"
+        }
+      }, "required": ["model", "input_"], "type": "object"
     },
+
     async execute(_id, params) {
       try {
         const parsed = parseArgs(params);
-        const apiKey = process.env.OPENCLAW_ALY_API_KEY;
+
         if (!apiKey) {
-          return errorResult("OPENCLAW_ALY_API_KEY is required");
+          return errorResult("apiKey is required");
         }
 
         const reqPayload: Record<string, unknown> = {
           model: parsed.model,
           input: parsed.input_,
         };
+
         if (parsed.parameters) {
           reqPayload.parameters = parsed.parameters;
         }
 
-        const response = await fetch(process.env.OPENCLAW_ALY_BASE_URL ?? DEFAULT_BASE_URL, {
+        const response = await fetch(baseUrl, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -191,6 +249,7 @@ export function createTxt2ImgAlyTool(): AnyAgentTool {
         });
 
         const data = (await response.json()) as Record<string, unknown>;
+
         if (Object.hasOwn(data, "code")) {
           throw new Error(`There was an error: ${JSON.stringify(data)}`);
         }
@@ -202,7 +261,7 @@ export function createTxt2ImgAlyTool(): AnyAgentTool {
 
         return {
           content: [
-            { type: "text" as const, text: `Generated ${urls.length} image(s)` },
+            {type: "text" as const, text: `Generated ${urls.length} image(s)`},
             {
               type: "text" as const,
               text: urls.join("\n"),
@@ -214,12 +273,25 @@ export function createTxt2ImgAlyTool(): AnyAgentTool {
           },
         };
       } catch (error) {
-        return errorResult(error instanceof Error ? error.message : "txt2img_aly failed");
+        return errorResult(
+          error instanceof Error ? error.message : "txt2img_aly failed"
+        );
       }
     },
   };
 }
 
 export default function register(api: OpenClawPluginApi) {
-  api.registerTool(createTxt2ImgAlyTool());
+  const cfg = (api.pluginConfig ?? {}) as { apiKey?: string; baseUrl?: string };
+  const apiKey = cfg.apiKey ?? "";
+  const baseUrl =
+    cfg.baseUrl ??
+    "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis";
+
+  api.registerTool(
+    createTxt2ImgAlyTool({
+      apiKey,
+      baseUrl,
+    })
+  );
 }
