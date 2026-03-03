@@ -1,4 +1,4 @@
-import type {AnyAgentTool, OpenClawPluginApi} from "../../src/plugins/types.js";
+import type { AnyAgentTool, OpenClawPluginApi } from "../../src/plugins/types.js";
 
 type Txt2ImgArgs = {
   model: string;
@@ -60,20 +60,34 @@ function parseArgs(raw: unknown): Txt2ImgArgs {
   const parsed: Txt2ImgArgs = {
     model,
     input_: {
-      messages: [{role: "user", content: [{text}]}],
+      messages: [{ role: "user", content: [{ text }] }],
     },
   };
 
   if (!Object.hasOwn(raw, "parameters") || raw.parameters == null) {
     return parsed;
   }
-  if (!isRecord(raw.parameters)) {
+
+  let parametersRaw = raw.parameters;
+  if (typeof parametersRaw === "string") {
+    const trimmed = parametersRaw.trim();
+    if (!trimmed) {
+      throw new Error("parameters must be an object");
+    }
+    try {
+      parametersRaw = JSON.parse(trimmed) as unknown;
+    } catch {
+      throw new Error("parameters JSON string is invalid");
+    }
+  }
+
+  if (!isRecord(parametersRaw)) {
     throw new Error("parameters must be an object");
   }
 
   const parameters: Txt2ImgArgs["parameters"] = {};
-  if (Object.hasOwn(raw.parameters, "negative_prompt")) {
-    const value = raw.parameters.negative_prompt;
+  if (Object.hasOwn(parametersRaw, "negative_prompt")) {
+    const value = parametersRaw.negative_prompt;
     if (typeof value !== "string") {
       throw new Error("negative_prompt must be a string");
     }
@@ -83,23 +97,23 @@ function parseArgs(raw: unknown): Txt2ImgArgs {
     parameters.negative_prompt = value;
   }
 
-  if (Object.hasOwn(raw.parameters, "size")) {
-    const value = raw.parameters.size;
+  if (Object.hasOwn(parametersRaw, "size")) {
+    const value = parametersRaw.size;
     if (typeof value !== "string" || !ALLOWED_SIZES.has(value)) {
       throw new Error("size 不是支持的分辨率");
     }
     parameters.size = value as Txt2ImgArgs["parameters"]["size"];
   }
 
-  if (Object.hasOwn(raw.parameters, "n")) {
-    if (raw.parameters.n !== 1) {
+  if (Object.hasOwn(parametersRaw, "n")) {
+    if (parametersRaw.n !== 1) {
       throw new Error("n 仅支持1");
     }
     parameters.n = 1;
   }
 
-  if (Object.hasOwn(raw.parameters, "seed")) {
-    const value = raw.parameters.seed;
+  if (Object.hasOwn(parametersRaw, "seed")) {
+    const value = parametersRaw.seed;
     if (!Number.isInteger(value) || value < 0 || value >= 2147483648) {
       throw new Error("seed 范围[0,2147483647]");
     }
@@ -135,91 +149,99 @@ function extractImageUrls(payload: Record<string, unknown>): string[] {
 
 function errorResult(message: string) {
   return {
-    content: [{type: "text" as const, text: message}],
+    content: [{ type: "text" as const, text: message }],
     isError: true,
   };
 }
 
-function createTxt2ImgAlyTool(options: {
-  apiKey: string;
-  baseUrl: string;
+export function createTxt2ImgAlyTool(options?: {
+  apiKey?: string;
+  baseUrl?: string;
 }): AnyAgentTool {
-  const {apiKey, baseUrl} = options;
+  const apiKey = options?.apiKey ?? process.env.OPENCLAW_ALY_API_KEY ?? "";
+  const baseUrl =
+    options?.baseUrl ??
+    process.env.OPENCLAW_ALY_BASE_URL ??
+    "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis";
 
   return {
     name: "txt2img_aly",
     description: "基于文本生成图片。",
     parameters: {
-      "properties": {
-        "model": {"description": "模型名称，例如 qwen-image-max", "type": "string"},
-        "input_": {
-          "properties": {
-            "messages": {
-              "description": "请求内容数组，仅支持单轮对话",
-              "items": {
-                "properties": {
-                  "role": {
-                    "const": "user",
-                    "description": "消息角色，必须为 user",
-                    "type": "string"
+      properties: {
+        model: { description: "模型名称，例如 qwen-image-max", type: "string" },
+        input_: {
+          properties: {
+            messages: {
+              description: "请求内容数组，仅支持单轮对话",
+              items: {
+                properties: {
+                  role: {
+                    const: "user",
+                    description: "消息角色，必须为 user",
+                    type: "string",
                   },
-                  "content": {
-                    "description": "消息内容数组，仅允许一个 text",
-                    "items": {
-                      "properties": {
-                        "text": {
-                          "description": "正向提示词，用于描述期望生成的图像内容、风格和构图。支持中英文，最长800字符。",
-                          "maxLength": 800,
-                          "type": "string"
-                        }
-                      }, "required": ["text"], "type": "object"
+                  content: {
+                    description: "消息内容数组，仅允许一个 text",
+                    items: {
+                      properties: {
+                        text: {
+                          description:
+                            "正向提示词，用于描述期望生成的图像内容、风格和构图。支持中英文，最长800字符。",
+                          maxLength: 800,
+                          type: "string",
+                        },
+                      },
+                      required: ["text"],
+                      type: "object",
                     },
-                    "maxItems": 1,
-                    "minItems": 1,
-                    "type": "array"
-                  }
-                }, "required": ["role", "content"], "type": "object"
+                    maxItems: 1,
+                    minItems: 1,
+                    type: "array",
+                  },
+                },
+                required: ["role", "content"],
+                type: "object",
               },
-              "maxItems": 1,
-              "minItems": 1,
-              "type": "array"
-            }
-          }, "required": ["messages"], "type": "object", "description": "输入基本信息"
+              maxItems: 1,
+              minItems: 1,
+              type: "array",
+            },
+          },
+          required: ["messages"],
+          type: "object",
+          description: "输入基本信息",
         },
-        "parameters": {
-          "anyOf": [{
-            "properties": {
-              "negative_prompt": {
-                "anyOf": [{
-                  "maxLength": 500,
-                  "type": "string"
-                }, {"type": "null"}],
-                "default": null,
-                "description": "反向提示词，最长500字符",
-                "title": "Negative Prompt"
-              },
-              "size": {
-                "anyOf": [{
-                  "enum": ["1664*928", "1472*1104", "1328*1328", "1104*1472", "928*1664"],
-                  "type": "string"
-                }, {"type": "null"}], "default": null, "description": "输出图像分辨率", "title": "Size"
-              },
-              "n": {
-                "anyOf": [{"const": 1, "type": "integer"}, {"type": "null"}],
-                "default": null,
-                "description": "生成图像数量，仅支持1",
-                "title": "N"
-              },
-              "seed": {
-                "anyOf": [{"exclusiveMaximum": 2147483648, "minimum": 0, "type": "integer"}, {"type": "null"}],
-                "default": null,
-                "description": "随机种子，范围[0,2147483647]",
-                "title": "Seed"
-              }
-            }, "title": "Parameters", "type": "object"
-          }, {"type": "null"}], "default": null, "description": "图像生成参数"
-        }
-      }, "required": ["model", "input_"], "type": "object"
+        parameters: {
+          type: "object",
+          description: "图像生成参数",
+          properties: {
+            negative_prompt: {
+              maxLength: 500,
+              type: "string",
+              description: "反向提示词，最长500字符",
+            },
+            size: {
+              enum: ["1664*928", "1472*1104", "1328*1328", "1104*1472", "928*1664"],
+              type: "string",
+              description: "输出图像分辨率",
+            },
+            n: {
+              const: 1,
+              type: "integer",
+              description: "生成图像数量，仅支持1",
+            },
+            seed: {
+              exclusiveMaximum: 2147483648,
+              minimum: 0,
+              type: "integer",
+              description: "随机种子，范围[0,2147483647]",
+            },
+          },
+        },
+      },
+      required: ["model", "input_"],
+      type: "object",
     },
 
     async execute(_id, params) {
@@ -227,7 +249,7 @@ function createTxt2ImgAlyTool(options: {
         const parsed = parseArgs(params);
 
         if (!apiKey) {
-          return errorResult("apiKey is required");
+          return errorResult("OPENCLAW_ALY_API_KEY is required");
         }
 
         const reqPayload: Record<string, unknown> = {
@@ -261,7 +283,7 @@ function createTxt2ImgAlyTool(options: {
 
         return {
           content: [
-            {type: "text" as const, text: `Generated ${urls.length} image(s)`},
+            { type: "text" as const, text: `Generated ${urls.length} image(s)` },
             {
               type: "text" as const,
               text: urls.join("\n"),
@@ -273,9 +295,7 @@ function createTxt2ImgAlyTool(options: {
           },
         };
       } catch (error) {
-        return errorResult(
-          error instanceof Error ? error.message : "txt2img_aly failed"
-        );
+        return errorResult(error instanceof Error ? error.message : "txt2img_aly failed");
       }
     },
   };
@@ -283,15 +303,11 @@ function createTxt2ImgAlyTool(options: {
 
 export default function register(api: OpenClawPluginApi) {
   const cfg = (api.pluginConfig ?? {}) as { apiKey?: string; baseUrl?: string };
-  const apiKey = cfg.apiKey ?? "";
-  const baseUrl =
-    cfg.baseUrl ??
-    "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis";
 
   api.registerTool(
     createTxt2ImgAlyTool({
-      apiKey,
-      baseUrl,
-    })
+      apiKey: cfg.apiKey,
+      baseUrl: cfg.baseUrl,
+    }),
   );
 }
