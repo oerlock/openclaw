@@ -1,0 +1,19 @@
+{
+  "id": "img2img-aly",
+  "name": "Img2Img Aly",
+  "description": "img2img extension for aly.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "DashScope API key from pluginConfig.apiKey."
+      },
+      "baseUrl": {
+        "type": "string",
+        "description": "Override API endpoint from pluginConfig.baseUrl; defaults to the built-in DashScope endpoint."
+      }
+    }
+  }
+}
