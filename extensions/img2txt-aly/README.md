@@ -8,7 +8,7 @@ You must set `apiKey` and `baseUrl` in plugin config. Plugin config takes preced
 
 - Tool name: `img2txt_aly`
 - Input fields: `model`, `input_`
-- `model` only supports `qwen-vl-max-latest`
+- `model` only supports `qwen3-vl-plus`
 - `input_.prompt` is the analysis instruction
 - `input_.image` supports public URL / OSS URL / Base64 `data:image/...`
 

@@ -26,7 +26,7 @@ describe("img2txt_aly", () => {
 
     const tool = createImg2TxtAlyTool({ apiKey: "k", baseUrl: "https://api.example" });
     const result = await tool.execute("call", {
-      model: "qwen-vl-max-latest",
+      model: "qwen3-vl-plus",
       input_: {
         prompt: "请描述这张图片",
         image: "https://img.example/cat.png",
@@ -41,7 +41,7 @@ describe("img2txt_aly", () => {
   it("rejects invalid image format", async () => {
     const tool = createImg2TxtAlyTool({ apiKey: "k", baseUrl: "https://api.example" });
     const result = await tool.execute("call", {
-      model: "qwen-vl-max-latest",
+      model: "qwen3-vl-plus",
       input_: {
         prompt: "请描述这张图片",
         image: "file:///tmp/cat.png",
@@ -63,6 +63,6 @@ describe("img2txt_aly", () => {
     });
 
     expect(result.isError).toBe(true);
-    expect(result.content[0]?.text).toContain("qwen-vl-max-latest");
+    expect(result.content[0]?.text).toContain("qwen3-vl-plus");
   });
 });

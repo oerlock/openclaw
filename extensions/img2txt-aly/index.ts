@@ -1,13 +1,13 @@
 import type { AnyAgentTool, OpenClawPluginApi } from "../../src/plugins/types.js";
 
-type AlyModel = "qwen-vl-max-latest";
+type AlyModel = "qwen3-vl-plus";
 
 type InputPayload = {
   prompt: string;
   image: string;
 };
 
-const ALLOWED_MODELS = new Set<AlyModel>(["qwen-vl-max-latest"]);
+const ALLOWED_MODELS = new Set<AlyModel>(["qwen3-vl-plus"]);
 
 function fail(message: string): never {
   throw new Error(message);
@@ -179,7 +179,7 @@ export function createImg2TxtAlyTool(options?: {
         const record = params as Record<string, unknown>;
         const model = record.model;
         if (!ALLOWED_MODELS.has(model as AlyModel)) {
-          throw new Error("model must be qwen-vl-max-latest");
+          throw new Error("model must be qwen3-vl-plus");
         }
 
         const input_ = readInput(record.input_);
