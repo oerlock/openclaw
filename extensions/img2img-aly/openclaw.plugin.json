@@ -8,11 +8,11 @@
     "properties": {
       "apiKey": {
         "type": "string",
-        "description": "DashScope API key. If omitted, OPENCLAW_ALY_API_KEY is used."
+        "description": "DashScope API key from pluginConfig.apiKey."
       },
       "baseUrl": {
         "type": "string",
-        "description": "Override API endpoint. If omitted, OPENCLAW_ALY_BASE_URL or default DashScope endpoint is used."
+        "description": "Override API endpoint from pluginConfig.baseUrl; defaults to the built-in DashScope endpoint."
       }
     }
   }

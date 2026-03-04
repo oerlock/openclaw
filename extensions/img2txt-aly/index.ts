@@ -115,11 +115,8 @@ export function createImg2TxtAlyTool(options?: {
   baseUrl?: string;
   client?: ChatClient;
 }): AnyAgentTool {
-  const apiKey = options?.apiKey ?? process.env.OPENCLAW_ALY_API_KEY ?? "";
-  const baseUrl =
-    options?.baseUrl ??
-    process.env.OPENCLAW_ALY_BASE_URL ??
-    "https://dashscope.aliyuncs.com/compatible-mode/v1";
+  const apiKey = options?.apiKey ?? "";
+  const baseUrl = options?.baseUrl ?? "https://dashscope.aliyuncs.com/compatible-mode/v1";
 
   return {
     name: "img2txt_aly",
@@ -158,7 +155,7 @@ export function createImg2TxtAlyTool(options?: {
     async execute(_id, params) {
       try {
         if (!apiKey) {
-          throw new Error("OPENCLAW_ALY_API_KEY not configured");
+          throw new Error("pluginConfig.apiKey not configured");
         }
         if (!params || typeof params !== "object") {
           throw new Error("params required");

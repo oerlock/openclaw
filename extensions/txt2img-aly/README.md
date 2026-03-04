@@ -2,7 +2,7 @@
 
 Demo OpenClaw plugin that provides `txt2img_aly` tool for Aliyun qwen-image-max.
 
-You must set `apiKey` and `baseUrl` in plugin config. Plugin config takes precedence over env vars.
+You must set `apiKey` and `baseUrl` in plugin config (`api.pluginConfig`).
 
 ## Tool contract
 
