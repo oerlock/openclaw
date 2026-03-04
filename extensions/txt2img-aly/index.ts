@@ -184,10 +184,9 @@ export function createTxt2ImgAlyTool(options?: {
   apiKey?: string;
   baseUrl?: string;
 }): AnyAgentTool {
-  const apiKey = options?.apiKey ?? process.env.OPENCLAW_ALY_API_KEY ?? "";
+  const apiKey = options?.apiKey ?? "";
   const baseUrl =
     options?.baseUrl ??
-    process.env.OPENCLAW_ALY_BASE_URL ??
     "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis";
 
   return {
@@ -281,7 +280,7 @@ export function createTxt2ImgAlyTool(options?: {
     async execute(_id, params) {
       try {
         if (!apiKey) {
-          throw new Error("OPENCLAW_ALY_API_KEY not configured");
+          throw new Error("pluginConfig.apiKey not configured");
         }
         if (!params || typeof params !== "object") {
           throw new Error("params required");

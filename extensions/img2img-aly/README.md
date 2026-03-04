@@ -2,7 +2,7 @@
 
 Demo OpenClaw plugin that provides `img2img_aly` tool for Aliyun qwen-image-edit.
 
-You must set `apiKey` and `baseUrl` in plugin config. Plugin config takes precedence over env vars.
+You must set `apiKey` and `baseUrl` in plugin config (`api.pluginConfig`).
 
 ## Tool contract
 
