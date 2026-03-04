@@ -2,6 +2,7 @@
 
 Demo OpenClaw plugin that provides `img2txt_aly` tool for Aliyun multimodal understanding.
 
+This plugin uses the `openai` SDK with DashScope OpenAI-compatible endpoint.
 You must set `apiKey` and `baseUrl` in plugin config. Plugin config takes precedence over env vars.
 
 ## Tool contract

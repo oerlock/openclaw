@@ -7,6 +7,28 @@ type InputPayload = {
   image: string;
 };
 
+type ChatClient = {
+  chat: {
+    completions: {
+      create(params: {
+        model: AlyModel;
+        messages: Array<{
+          role: "user";
+          content: Array<
+            { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+          >;
+        }>;
+      }): Promise<{
+        choices?: Array<{
+          message?: {
+            content?: string | null;
+          };
+        }>;
+      }>;
+    };
+  };
+};
+
 const ALLOWED_MODELS = new Set<AlyModel>(["qwen3-vl-plus"]);
 
 function fail(message: string): never {
@@ -46,92 +68,58 @@ function readInput(raw: unknown): InputPayload {
   };
 }
 
+async function createChatClient(apiKey: string, baseUrl: string): Promise<ChatClient> {
+  const { default: OpenAI } = await import("openai");
+  return new OpenAI({
+    apiKey,
+    baseURL: baseUrl,
+  }) as ChatClient;
+}
+
 async function callAly(params: {
-  apiKey: string;
-  baseUrl: string;
+  client: ChatClient;
   model: AlyModel;
   input_: InputPayload;
 }): Promise<string> {
-  const payload = {
+  const response = await params.client.chat.completions.create({
     model: params.model,
-    input: {
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: params.input_.prompt },
-            { type: "image", image: params.input_.image },
-          ],
-        },
-      ],
-    },
-  };
-
-  const resp = await fetch(params.baseUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${params.apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: params.input_.prompt,
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: params.input_.image,
+            },
+          },
+        ],
+      },
+    ],
   });
 
-  const body = await resp.json().catch(() => null);
-  if (!resp.ok) {
-    fail(`Aliyun request failed with status ${resp.status}: ${JSON.stringify(body)}`);
-  }
-  if (!body || typeof body !== "object") {
-    fail("Aliyun response is invalid");
-  }
-  if (Object.hasOwn(body, "code")) {
-    fail(`Aliyun returned an error: ${JSON.stringify(body)}`);
+  const content = response.choices?.[0]?.message?.content;
+  if (typeof content !== "string" || !content.trim()) {
+    fail("Aliyun response has no text content");
   }
 
-  const output = (body as { output?: unknown }).output;
-  const choices =
-    output && typeof output === "object" ? (output as { choices?: unknown }).choices : undefined;
-  if (!Array.isArray(choices) || choices.length === 0) {
-    fail("Aliyun response has no choices");
-  }
-
-  const firstMessage =
-    choices[0] && typeof choices[0] === "object"
-      ? (choices[0] as { message?: unknown }).message
-      : undefined;
-  const content =
-    firstMessage && typeof firstMessage === "object"
-      ? (firstMessage as { content?: unknown }).content
-      : undefined;
-
-  if (typeof content === "string" && content.trim()) {
-    return content;
-  }
-
-  if (Array.isArray(content)) {
-    const texts: string[] = [];
-    for (const item of content) {
-      const text = item && typeof item === "object" ? (item as { text?: unknown }).text : undefined;
-      if (typeof text === "string" && text.trim()) {
-        texts.push(text);
-      }
-    }
-    if (texts.length > 0) {
-      return texts.join("\n");
-    }
-  }
-
-  fail("Aliyun response has no text content");
+  return content;
 }
 
 export function createImg2TxtAlyTool(options?: {
   apiKey?: string;
   baseUrl?: string;
+  client?: ChatClient;
 }): AnyAgentTool {
   const apiKey = options?.apiKey ?? process.env.OPENCLAW_ALY_API_KEY ?? "";
   const baseUrl =
     options?.baseUrl ??
     process.env.OPENCLAW_ALY_BASE_URL ??
-    "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation";
+    "https://dashscope.aliyuncs.com/compatible-mode/v1";
 
   return {
     name: "img2txt_aly",
@@ -183,10 +171,9 @@ export function createImg2TxtAlyTool(options?: {
         }
 
         const input_ = readInput(record.input_);
-
+        const client = options?.client ?? (await createChatClient(apiKey, baseUrl));
         const text = await callAly({
-          apiKey,
-          baseUrl,
+          client,
           model,
           input_,
         });

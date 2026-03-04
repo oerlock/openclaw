@@ -6,25 +6,28 @@ describe("img2txt_aly", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns text from Aliyun response", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        output: {
-          choices: [
-            {
-              message: {
-                content: [{ text: "图片中是一只坐在窗台上的猫。" }],
-              },
-            },
-          ],
+  it("returns text from OpenAI compatible response", async () => {
+    const createMock = vi.fn().mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: "图片中是一只坐在窗台上的猫。",
+          },
         },
-      }),
+      ],
     });
-    vi.stubGlobal("fetch", fetchMock);
 
-    const tool = createImg2TxtAlyTool({ apiKey: "k", baseUrl: "https://api.example" });
+    const tool = createImg2TxtAlyTool({
+      apiKey: "k",
+      client: {
+        chat: {
+          completions: {
+            create: createMock,
+          },
+        },
+      },
+    });
+
     const result = await tool.execute("call", {
       model: "qwen3-vl-plus",
       input_: {
@@ -35,11 +38,11 @@ describe("img2txt_aly", () => {
 
     expect(result.isError).not.toBe(true);
     expect(result.content[0]?.text).toContain("猫");
-    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(createMock).toHaveBeenCalledOnce();
   });
 
   it("rejects invalid image format", async () => {
-    const tool = createImg2TxtAlyTool({ apiKey: "k", baseUrl: "https://api.example" });
+    const tool = createImg2TxtAlyTool({ apiKey: "k" });
     const result = await tool.execute("call", {
       model: "qwen3-vl-plus",
       input_: {
@@ -53,7 +56,7 @@ describe("img2txt_aly", () => {
   });
 
   it("rejects unsupported model", async () => {
-    const tool = createImg2TxtAlyTool({ apiKey: "k", baseUrl: "https://api.example" });
+    const tool = createImg2TxtAlyTool({ apiKey: "k" });
     const result = await tool.execute("call", {
       model: "qwen-vl-plus",
       input_: {
