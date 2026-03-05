@@ -22,6 +22,7 @@ def generate_prompts(storyboard: Dict) -> Dict[str, List[Dict]]:
         "backgrounds": [],
         "characters": [],
         "compositions": [],
+        "review_checklists": [],
     }
 
     for page in storyboard.get("pages", []):
@@ -41,6 +42,23 @@ def generate_prompts(storyboard: Dict) -> Dict[str, List[Dict]]:
                         f"重点突出：{page['visual_focus']}，"
                         "角色与道具交互明确。"
                     ),
+                }
+            )
+            prompts["review_checklists"].append(
+                {
+                    "page_number": page["page_number"],
+                    "character_check": [
+                        "发型/主色服饰/标志道具与前页一致",
+                        "表情和动作符合本页情绪",
+                    ],
+                    "background_check": [
+                        "时代与文化元素匹配成语语境",
+                        "构图预留角色站位并避免细节过载",
+                    ],
+                    "composition_check": [
+                        "透视、光照和阴影方向一致",
+                        "角色与背景交互自然且核心动作清晰",
+                    ],
                 }
             )
 
