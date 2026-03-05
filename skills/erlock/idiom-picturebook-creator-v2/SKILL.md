@@ -8,15 +8,13 @@ metadata: { "openclaw": { "emoji": "📚", "requires": { "bins": ["python3"] } }
 
 ## 概述
 
-该技能基于 `reference_code/storyboard-manager-v1` 的工作流进行重构，针对「中国成语绘本」场景提供更清晰的分阶段执行路径：
+该技能基于 `reference_code/storyboard-manager-v1` 的工作流重构，针对中国成语绘本提供可审查、可复用、可迭代的生产路径：
 
 1. 成语选题与寓意抽取
-2. 故事板结构生成
-3. 分页文案与视觉提示词生成
-4. 项目级时间线检查
-5. 跨页面一致性检查
-
-与 v1 相比，v2 强调**可审查、可复用、可迭代**：你可以先自动生成骨架，再做局部补写，并通过脚本发现问题。
+2. 12 页故事板结构生成
+3. 三段式产图（角色图 → 背景图 → 融合图）
+4. 时间线检查
+5. 一致性检查
 
 ## 推荐项目结构
 
@@ -25,31 +23,31 @@ project-root/
 ├─ picturebook/
 │  └─ <idiom-slug>/
 │     ├─ storyboard.json
+│     ├─ prompts.json
 │     ├─ pages/
 │     │  ├─ page-01.md
 │     │  └─ ...
 │     ├─ assets/
+│     │  ├─ characters/
 │     │  ├─ backgrounds/
-│     │  └─ characters/
+│     │  └─ compositions/
 │     └─ export/
 ├─ glossary.md
 └─ notes.md
 ```
-
-如果用户尚未提供结构，先建议创建上述目录，再继续生成。
 
 ## 工作流决策树
 
 ```text
 用户请求
 ├─ “从成语开始做一本绘本”
-│  └─ 走完整工作流（选题 → 故事板 → 图文提示词 → 检查）
-├─ “已有故事，补分镜/补图提示词”
-│  └─ 跳过选题，直接进入分页生成与图像处理
+│  └─ 完整流程（选题 → 故事板 → 三段式产图 → 检查）
+├─ “已有故事，补图像提示词”
+│  └─ 直接进入 process_images.py + 检查
 ├─ “检查哪里不连贯”
-│  ├─ 时间顺序问题 → scripts/timeline_tracker.py
-│  └─ 角色/术语/风格问题 → scripts/consistency_checker.py
-└─ “只要模板或规范”
+│  ├─ 时间顺序问题 → timeline_tracker.py
+│  └─ 角色/术语/风格问题 → consistency_checker.py
+└─ “只要模板”
    └─ 读取 references/storyboard-template-v2.md
 ```
 
@@ -57,36 +55,31 @@ project-root/
 
 ### 阶段 1：成语定义与受众定位
 
-1. 明确成语：字面义、来源故事、现代语境含义。
+1. 明确成语：字面义、来源故事、现代语境。
 2. 明确受众：建议 `4-6岁` / `7-9岁` / `10-12岁`。
-3. 提炼单句寓意：避免复合价值观混杂。
+3. 提炼单句寓意：避免多重道理混杂。
 4. 选择叙事模式：
-   - 历史复述型（贴近典故）
-   - 现代映射型（校园/家庭场景）
-   - 混合型（典故 + 现实应用）
+   - `historical`（历史复述）
+   - `modern`（现代映射）
+   - `hybrid`（典故+现实）
 
 ### 阶段 2：生成 12 页故事板骨架
-
-在项目目录运行：
 
 ```bash
 python3 {baseDir}/scripts/generate_storyboard.py \
   --idiom "守株待兔" \
   --meaning "不能把偶然当作必然" \
   --age "7-9岁" \
+  --mode hybrid \
+  --orientation landscape \
   --output ./picturebook/shou-zhu-dai-tu/storyboard.json
 ```
 
-该脚本会提供：
+脚本输出包含：`story_info`、`pages`、`visual_style`、`production_flow`。
 
-- 标准 12 页页型（封面/铺垫/冲突/高潮/收束/封底）
-- 每页的叙事职能与视觉焦点
-- 基础风格配置（配色、构图、文化元素）
+### 阶段 3：三段式产图与检查（核心优化）
 
-### 阶段 3：填充分页文案与视觉提示词
-
-1. 为每页补齐 `scene_description` 和 `text_content`（建议每页 ≤ 50 字）。
-2. 运行图像处理脚本生成提示词：
+先运行提示词生成：
 
 ```bash
 python3 {baseDir}/scripts/process_images.py \
@@ -94,22 +87,24 @@ python3 {baseDir}/scripts/process_images.py \
   --output ./picturebook/shou-zhu-dai-tu/prompts.json
 ```
 
-3. **先单独生成角色形象图**（角色立绘），再做检查：
-   - 检查项：发型/服饰主色/标志性道具是否稳定。
-   - 检查项：角色年龄感与目标受众是否匹配。
-   - 检查项：角色表情和动作是否支持当前页情绪。
-4. **再单独生成背景图**，再做检查：
-   - 检查项：时代元素与成语语境是否一致。
-   - 检查项：构图是否预留角色站位。
-   - 检查项：背景信息密度是否适合儿童阅读（避免过载）。
-5. **最后执行角色+背景融合**（合成图），再做检查：
-   - 检查项：透视、光照、阴影方向是否一致。
-   - 检查项：角色与道具交互是否自然（手部、视线、遮挡）。
-   - 检查项：最终画面是否准确表达该页核心动作。
+然后按固定顺序执行：
 
-### 阶段 4：时间线检查（可选但推荐）
+1. **角色形象图（character_portraits）**
+   - 检查：发型/主色/标志道具一致性
+   - 检查：年龄感与受众匹配
+   - 检查：表情动作与页面情绪一致
+2. **背景图（backgrounds）**
+   - 检查：时代与文化元素匹配成语语境
+   - 检查：构图预留角色站位
+   - 检查：信息密度不过载
+3. **融合图（compositions）**
+   - 检查：透视、光照、阴影方向一致
+   - 检查：角色与道具交互自然
+   - 检查：核心动作一眼可读
 
-若故事含“几日后/次日/当晚”等时间推进，请执行：
+> `prompts.json` 中的 `review_checklists` 可直接作为逐页验收单。
+
+### 阶段 4：时间线检查（推荐）
 
 ```bash
 python3 {baseDir}/scripts/timeline_tracker.py \
@@ -118,60 +113,36 @@ python3 {baseDir}/scripts/timeline_tracker.py \
 
 重点关注：
 
-- 是否存在未标注时间的页面
-- 事件顺序是否倒置
-- 同一角色是否出现不合理跨场景跳转
+- 缺失时间标记的页面
+- 天数倒退导致的顺序异常
 
-### 阶段 5：一致性检查（强烈推荐）
+### 阶段 5：一致性检查（推荐）
 
 ```bash
 python3 {baseDir}/scripts/consistency_checker.py \
   ./picturebook/shou-zhu-dai-tu --output markdown
 ```
 
-检查维度：
+重点关注：
 
-- 角色名与称呼是否统一
-- 关键词（成语术语、关键道具）是否漂移
-- 风格元素（朝代、服饰、场景）是否冲突
-- 寓意表达是否与成语核心含义一致
+- 多成语漂移（主题跑偏）
+- 角色命名变体（同名多写法）
+- 低频角色是否是误拼写
+- 缺失时间标记文件（与时间线报告交叉）
 
-## 常见请求处理模板
+## 交付验收清单
 
-### “帮我把某个成语做成绘本”
-
-1. 先确认成语、受众年龄、风格偏好。
-2. 运行 `generate_storyboard.py` 产出骨架。
-3. 按页生成文案并补图像提示词。
-4. 运行时间线与一致性检查，输出修订建议。
-
-### “我只要图像提示词”
-
-1. 读取现有 `storyboard.json`。
-2. 运行 `process_images.py` 生成 `prompts.json`。
-3. 按页面类型给出背景图、角色图、合成图三层提示词。
-4. 明确提醒：角色图先检查、背景图再检查、融合图最后检查。
-
-### “检查我的绘本哪里不通顺”
-
-1. 先跑 `timeline_tracker.py` 看顺序。
-2. 再跑 `consistency_checker.py` 看命名和世界观冲突。
-3. 按严重级别给出修复列表（先改 Critical，再改 Warning）。
+- [ ] 12 页结构完整，页号连续
+- [ ] 每页文案建议 ≤ 50 字
+- [ ] 三段式产图已按顺序执行并检查
+- [ ] 时间线检查通过（或异常已解释）
+- [ ] 一致性检查通过（或异常已解释）
 
 ## 资源
 
-- `scripts/generate_storyboard.py`：生成 12 页成语绘本结构骨架。
-- `scripts/process_images.py`：将故事板转换为背景/角色/合成提示词。
-- `scripts/timeline_tracker.py`：抽取并分析分页中的时间线事件。
-- `scripts/consistency_checker.py`：检查角色、术语与画风一致性。
-- `references/storyboard-template-v2.md`：可直接复用的绘本模板。
-- `references/visual-style-guide.md`：儿童向成语绘本视觉规范。
-
-## 最佳实践
-
-1. **先骨架后润色**：先把 12 页跑通，再优化语言。
-2. **每页一个核心动作**：减少低龄阅读认知负担。
-3. **三段式产图**：角色图（检查）→ 背景图（检查）→ 融合图（检查）。
-4. **同一角色固定视觉锚点**：发型、主色、配饰至少固定两项。
-5. **寓意只在末段强化一次**：避免说教过度。
-6. **改稿后重跑检查脚本**：确保修订不引入新冲突。
+- `scripts/generate_storyboard.py`：生成 12 页成语绘本骨架。
+- `scripts/process_images.py`：生成角色图/背景图/融合图提示词与检查清单。
+- `scripts/timeline_tracker.py`：提取时间标记并检查时间顺序。
+- `scripts/consistency_checker.py`：检查角色命名、成语主题与基础一致性。
+- `references/storyboard-template-v2.md`：绘本模板。
+- `references/visual-style-guide.md`：视觉规范。
