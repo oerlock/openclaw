@@ -1,156 +1,91 @@
 #!/usr/bin/env python3
-"""
-Generate a structured storyboard for Chinese idiom picture books.
-This script creates a standardized story structure based on the idiom provided.
-"""
+"""Generate a normalized storyboard JSON for Chinese idiom picture books."""
 
+from __future__ import annotations
+
+import argparse
 import json
-import os
-from typing import Dict, List
+from pathlib import Path
+from typing import Any
 
-def create_storyboard_structure(idiom: str, core_meaning: str, target_age: str = "4-8岁") -> Dict:
-    """
-    Create a standardized storyboard structure for an idiom picture book.
-    
-    Args:
-        idiom: The Chinese idiom to illustrate
-        core_meaning: The core meaning or moral of the idiom
-        target_age: Target age group for the story
-    
-    Returns:
-        Dictionary containing the complete storyboard structure
-    """
-    
-    # Basic story info
-    storyboard = {
+DEFAULT_TARGET_AGE = "4-8岁"
+DEFAULT_TOTAL_PAGES = 12
+
+
+PAGE_BLUEPRINT = [
+    (1, "cover", "封面标题与主题", "《{idiom}》\n成语故事绘本"),
+    (2, "opening", "角色介绍和背景设定", ""),
+    (3, "opening", "故事开始的场景", ""),
+    (4, "conflict_start", "问题或挑战的出现", ""),
+    (5, "conflict_start", "角色面对困难", ""),
+    (6, "climax", "成语典故的关键时刻", ""),
+    (7, "climax", "高潮场景的细节", ""),
+    (8, "resolution", "问题的解决", ""),
+    (9, "resolution", "寓意的视觉化表达", "这个故事告诉我们：{core_meaning}"),
+    (10, "ending", "角色的成长或变化", ""),
+    (11, "ending", "现实生活中的应用", "在生活中，我们也要记住这个道理！"),
+    (12, "back_cover", "温馨收束画面", "《{idiom}》成语故事\n适合{target_age}儿童阅读"),
+]
+
+
+def create_storyboard_structure(idiom: str, core_meaning: str, target_age: str = DEFAULT_TARGET_AGE) -> dict[str, Any]:
+    """Create a storyboard skeleton with deterministic page layout."""
+    pages: list[dict[str, Any]] = []
+    for page_number, page_type, visual_focus, text_tpl in PAGE_BLUEPRINT:
+        pages.append(
+            {
+                "page_number": page_number,
+                "type": page_type,
+                "scene_description": "",
+                "text_content": text_tpl.format(
+                    idiom=idiom, core_meaning=core_meaning, target_age=target_age
+                ),
+                "visual_focus": visual_focus,
+            }
+        )
+
+    return {
         "story_info": {
             "idiom": idiom,
             "core_meaning": core_meaning,
             "target_age": target_age,
-            "total_pages": 12
+            "total_pages": DEFAULT_TOTAL_PAGES,
         },
-        "characters": {
-            "main_characters": [],
-            "supporting_characters": []
-        },
-        "pages": [
-            {
-                "page_number": 1,
-                "type": "cover",
-                "scene_description": "",
-                "text_content": f"《{idiom}》\n成语故事绘本",
-                "visual_focus": ""
-            },
-            {
-                "page_number": 2,
-                "type": "opening",
-                "scene_description": "",
-                "text_content": "",
-                "visual_focus": "角色介绍和背景设定"
-            },
-            {
-                "page_number": 3,
-                "type": "opening",
-                "scene_description": "",
-                "text_content": "",
-                "visual_focus": "故事开始的场景"
-            },
-            {
-                "page_number": 4,
-                "type": "conflict_start",
-                "scene_description": "",
-                "text_content": "",
-                "visual_focus": "问题或挑战的出现"
-            },
-            {
-                "page_number": 5,
-                "type": "conflict_start",
-                "scene_description": "",
-                "text_content": "",
-                "visual_focus": "角色面对困难"
-            },
-            {
-                "page_number": 6,
-                "type": "climax",
-                "scene_description": "",
-                "text_content": "",
-                "visual_focus": "成语典故的关键时刻"
-            },
-            {
-                "page_number": 7,
-                "type": "climax",
-                "scene_description": "",
-                "text_content": "",
-                "visual_focus": "高潮场景的细节"
-            },
-            {
-                "page_number": 8,
-                "type": "resolution",
-                "scene_description": "",
-                "text_content": "",
-                "visual_focus": "问题的解决"
-            },
-            {
-                "page_number": 9,
-                "type": "resolution",
-                "scene_description": "",
-                "text_content": f"这个故事告诉我们：{core_meaning}",
-                "visual_focus": "寓意的视觉化表达"
-            },
-            {
-                "page_number": 10,
-                "type": "ending",
-                "scene_description": "",
-                "text_content": "",
-                "visual_focus": "角色的成长或变化"
-            },
-            {
-                "page_number": 11,
-                "type": "ending",
-                "scene_description": "",
-                "text_content": "在生活中，我们也要记住这个道理！",
-                "visual_focus": "现代生活中的应用"
-            },
-            {
-                "page_number": 12,
-                "type": "back_cover",
-                "scene_description": "",
-                "text_content": f"《{idiom}》成语故事\n适合{target_age}儿童阅读",
-                "visual_focus": "温馨的结束画面"
-            }
-        ],
+        "characters": {"main_characters": [], "supporting_characters": []},
+        "pages": pages,
         "visual_style": {
             "art_style": "明亮卡通风格，融入中国传统元素",
             "color_palette": "温暖明亮的色彩，适合儿童",
-            "composition": "清晰的构图，重点突出角色和关键动作",
-            "cultural_elements": "根据成语背景适当融入传统中国元素"
-        }
+            "composition": "清晰构图，重点突出角色与关键动作",
+            "cultural_elements": "根据成语背景融入传统中国元素",
+        },
     }
-    
-    return storyboard
 
-def save_storyboard(storyboard: Dict, output_dir: str, idiom: str) -> str:
-    """Save the storyboard to a JSON file."""
-    os.makedirs(output_dir, exist_ok=True)
-    filename = f"{idiom}_storyboard.json"
-    filepath = os.path.join(output_dir, filename)
-    
-    with open(filepath, 'w', encoding='utf-8') as f:
-        json.dump(storyboard, f, ensure_ascii=False, indent=2)
-    
-    return filepath
+
+def save_storyboard(storyboard: dict[str, Any], output_dir: Path, idiom: str) -> Path:
+    """Persist storyboard JSON and return written file path."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / f"{idiom}_storyboard.json"
+    output_file.write_text(json.dumps(storyboard, ensure_ascii=False, indent=2), encoding="utf-8")
+    return output_file
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate a Chinese idiom picturebook storyboard")
+    parser.add_argument("idiom", help="Chinese idiom")
+    parser.add_argument("core_meaning", help="Core meaning / moral")
+    parser.add_argument("--target-age", default=DEFAULT_TARGET_AGE, help="Target age range")
+    parser.add_argument("--output-dir", default="./output", help="Output directory")
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    storyboard = create_storyboard_structure(args.idiom, args.core_meaning, args.target_age)
+    output_file = save_storyboard(storyboard, Path(args.output_dir), args.idiom)
+    print(f"Storyboard saved to: {output_file}")
+    return 0
+
 
 if __name__ == "__main__":
-    # Example usage
-    import sys
-    
-    if len(sys.argv) != 3:
-        print("Usage: python generate_storyboard.py <idiom> <core_meaning>")
-        sys.exit(1)
-    
-    idiom = sys.argv[1]
-    core_meaning = sys.argv[2]
-    
-    storyboard = create_storyboard_structure(idiom, core_meaning)
-    output_file = save_storyboard(storyboard, "./output", idiom)
-    print(f"Storyboard saved to: {output_file}")
+    raise SystemExit(main())
