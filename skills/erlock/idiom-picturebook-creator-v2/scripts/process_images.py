@@ -4,7 +4,7 @@
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 MAX_PAGE_TEXT_LEN = 50
 
@@ -38,17 +38,24 @@ def _validate_storyboard(storyboard: Dict) -> Tuple[List[str], List[str]]:
     return errors, warnings
 
 
-def generate_prompts(storyboard: Dict) -> Dict[str, List[Dict]]:
+def generate_prompts(storyboard: Dict) -> Dict[str, Any]:
     style = storyboard.get("visual_style", {})
     pages = storyboard.get("pages", [])
     main_characters = storyboard.get("characters", {}).get("main_characters", [])
 
-    prompts: Dict[str, List[Dict]] = {
+    prompts: Dict[str, Any] = {
         "character_portraits": [],
         "backgrounds": [],
         "compositions": [],
         "review_checklists": [],
     }
+
+    prompts["tooling"] = {
+        "character_portraits": {"generate": "txt2img_aly", "review": "img2txt_aly"},
+        "backgrounds": {"generate": "txt2img_aly", "review": "img2txt_aly"},
+        "compositions": {"generate": "img2img_aly", "review": "img2txt_aly"},
+    }
+    prompts["generation_order"] = ["character_portraits", "backgrounds", "compositions"]
 
     for idx, character in enumerate(main_characters, start=1):
         prompts["character_portraits"].append(
@@ -62,6 +69,8 @@ def generate_prompts(storyboard: Dict) -> Dict[str, List[Dict]]:
                     f"风格：{style.get('art_style', '明亮卡通')}。"
                 ),
                 "size": "928x1664",
+                "generate_tool": "txt2img_aly",
+                "review_tool": "img2txt_aly",
             }
         )
 
@@ -75,6 +84,8 @@ def generate_prompts(storyboard: Dict) -> Dict[str, List[Dict]]:
                 "page_number": page_number,
                 "prompt": _background_prompt(page, style),
                 "size": "1664x928",
+                "generate_tool": "txt2img_aly",
+                "review_tool": "img2txt_aly",
             }
         )
         prompts["compositions"].append(
@@ -85,6 +96,8 @@ def generate_prompts(storyboard: Dict) -> Dict[str, List[Dict]]:
                     f"重点突出：{page['visual_focus']}，"
                     "角色与道具交互明确。"
                 ),
+                "generate_tool": "img2img_aly",
+                "review_tool": "img2txt_aly",
             }
         )
         prompts["review_checklists"].append(

@@ -16,6 +16,20 @@ metadata: { "openclaw": { "emoji": "📚", "requires": { "bins": ["python3"] } }
 4. 时间线检查
 5. 一致性检查
 
+## 与图像工具的绑定（本次优化）
+
+当前与生成相关工具为：
+
+- `txt2img_aly`：从文字提示直接生成角色图或背景图
+- `img2img_aly`：在已有图基础上做融合/重绘/细化
+- `img2txt_aly`：对生成结果做视觉复核（描述画面以便对照检查项）
+
+固定执行顺序：
+
+1. `txt2img_aly` 产角色图 → `img2txt_aly` 检查
+2. `txt2img_aly` 产背景图 → `img2txt_aly` 检查
+3. `img2img_aly` 做融合图 → `img2txt_aly` 终检
+
 ## 推荐项目结构
 
 ```text
@@ -36,21 +50,6 @@ project-root/
 └─ notes.md
 ```
 
-## 工作流决策树
-
-```text
-用户请求
-├─ “从成语开始做一本绘本”
-│  └─ 完整流程（选题 → 故事板 → 三段式产图 → 检查）
-├─ “已有故事，补图像提示词”
-│  └─ 直接进入 process_images.py + 检查
-├─ “检查哪里不连贯”
-│  ├─ 时间顺序问题 → timeline_tracker.py
-│  └─ 角色/术语/风格问题 → consistency_checker.py
-└─ “只要模板”
-   └─ 读取 references/storyboard-template-v2.md
-```
-
 ## 详细工作流
 
 ### 阶段 1：成语定义与受众定位
@@ -58,10 +57,7 @@ project-root/
 1. 明确成语：字面义、来源故事、现代语境。
 2. 明确受众：建议 `4-6岁` / `7-9岁` / `10-12岁`。
 3. 提炼单句寓意：避免多重道理混杂。
-4. 选择叙事模式：
-   - `historical`（历史复述）
-   - `modern`（现代映射）
-   - `hybrid`（典故+现实）
+4. 选择叙事模式：`historical` / `modern` / `hybrid`。
 
 ### 阶段 2：生成 12 页故事板骨架
 
@@ -75,11 +71,9 @@ python3 {baseDir}/scripts/generate_storyboard.py \
   --output ./picturebook/shou-zhu-dai-tu/storyboard.json
 ```
 
-脚本输出包含：`story_info`、`pages`、`visual_style`、`production_flow`。
+### 阶段 3：生成提示词与三段式产图
 
-### 阶段 3：三段式产图与检查（核心优化）
-
-先运行提示词生成：
+先生成统一提示词文件：
 
 ```bash
 python3 {baseDir}/scripts/process_images.py \
@@ -87,22 +81,19 @@ python3 {baseDir}/scripts/process_images.py \
   --output ./picturebook/shou-zhu-dai-tu/prompts.json
 ```
 
-然后按固定顺序执行：
+然后严格按顺序执行：
 
 1. **角色形象图（character_portraits）**
-   - 检查：发型/主色/标志道具一致性
-   - 检查：年龄感与受众匹配
-   - 检查：表情动作与页面情绪一致
+   - 生成：`txt2img_aly`
+   - 检查：`img2txt_aly` 对照 `character_check`
 2. **背景图（backgrounds）**
-   - 检查：时代与文化元素匹配成语语境
-   - 检查：构图预留角色站位
-   - 检查：信息密度不过载
+   - 生成：`txt2img_aly`
+   - 检查：`img2txt_aly` 对照 `background_check`
 3. **融合图（compositions）**
-   - 检查：透视、光照、阴影方向一致
-   - 检查：角色与道具交互自然
-   - 检查：核心动作一眼可读
+   - 生成：`img2img_aly`
+   - 检查：`img2txt_aly` 对照 `composition_check`
 
-> `prompts.json` 中的 `review_checklists` 可直接作为逐页验收单。
+> `prompts.json` 中提供了 `tooling`、`generation_order` 与 `review_checklists`，可直接按页执行与验收。
 
 ### 阶段 4：时间线检查（推荐）
 
@@ -111,10 +102,7 @@ python3 {baseDir}/scripts/timeline_tracker.py \
   ./picturebook/shou-zhu-dai-tu/pages --output markdown
 ```
 
-重点关注：
-
-- 缺失时间标记的页面
-- 天数倒退导致的顺序异常
+关注：缺失时间标记、天数倒退。
 
 ### 阶段 5：一致性检查（推荐）
 
@@ -123,18 +111,15 @@ python3 {baseDir}/scripts/consistency_checker.py \
   ./picturebook/shou-zhu-dai-tu --output markdown
 ```
 
-重点关注：
-
-- 多成语漂移（主题跑偏）
-- 角色命名变体（同名多写法）
-- 低频角色是否是误拼写
-- 缺失时间标记文件（与时间线报告交叉）
+关注：多成语漂移、角色命名变体、低频角色、缺失时间标记。
 
 ## 交付验收清单
 
 - [ ] 12 页结构完整，页号连续
 - [ ] 每页文案建议 ≤ 50 字
-- [ ] 三段式产图已按顺序执行并检查
+- [ ] `txt2img_aly` 角色图 + `img2txt_aly` 检查完成
+- [ ] `txt2img_aly` 背景图 + `img2txt_aly` 检查完成
+- [ ] `img2img_aly` 融合图 + `img2txt_aly` 检查完成
 - [ ] 时间线检查通过（或异常已解释）
 - [ ] 一致性检查通过（或异常已解释）
 
