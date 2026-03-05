@@ -1,263 +1,263 @@
-# Character Development Reference
+# 角色开发参考
 
-This reference provides frameworks for creating compelling, multi-dimensional characters.
+本参考提供用于创建具有吸引力且多维角色的框架。
 
-## Core Character Elements
+## 核心角色要素
 
-### Basic Profile
+### 基本档案
 
-- **Name**: Full name, nicknames, name meaning
-- **Age**: Chronological and how they present
-- **Physical Description**: Distinguishing features, style, mannerisms
-- **Role**: Protagonist, antagonist, supporting, mentor, etc.
-- **Archetype**: Hero, mentor, trickster, everyman, etc.
+- **姓名**：全名、昵称、名字含义  
+- **年龄**：实际年龄以及他们给人的年龄感  
+- **外貌描述**：显著特征、穿衣风格、举止习惯  
+- **角色定位**：主角、反派、配角、导师等  
+- **原型**：英雄、导师、诡计者、普通人等  
 
-### Personality Dimensions
+### 性格维度
 
-- **Temperament**: Sanguine, choleric, melancholic, phlegmatic
-- **Traits**: 3-5 defining characteristics (both positive and negative)
-- **Quirks**: Unique habits or behaviors
-- **Speech Patterns**: How they talk, vocabulary, accent
-- **Sense of Humor**: Type and style
+- **气质类型**：多血质、胆汁质、抑郁质、黏液质  
+- **性格特征**：3–5 个核心特征（包含优点和缺点）  
+- **怪癖**：独特习惯或行为  
+- **说话方式**：说话方式、词汇、口音  
+- **幽默感**：幽默类型与风格  
 
-### Motivation & Goals
+### 动机与目标
 
-- **External Goal**: What they're trying to achieve (plot-level)
-- **Internal Goal**: What they're trying to become (character arc)
-- **Motivation**: Why they want these things
-- **Stakes**: What happens if they fail
-- **Misbelief/Lie**: False belief holding them back
+- **外在目标**：他们试图实现什么（剧情层面）  
+- **内在目标**：他们试图成为怎样的人（角色成长弧）  
+- **动机**：为什么他们想要这些  
+- **风险（Stakes）**：如果失败会发生什么  
+- **错误信念 / 谎言**：阻碍他们成长的错误信念  
 
-## Character Backstory Framework
+## 角色背景框架
 
-### The Ghost (Past Wound)
+### “幽灵”（过去的创伤）
 
-- **Traumatic Event**: What happened in their past
-- **Age When It Occurred**: How it shaped their development
-- **Who Was Involved**: Other characters connected to trauma
-- **How It Changed Them**: Before and after personality
-- **Coping Mechanisms**: How they deal with the wound
+- **创伤事件**：过去发生了什么  
+- **发生年龄**：它如何影响角色成长  
+- **涉及人物**：与创伤相关的其他角色  
+- **改变方式**：事件前后的性格变化  
+- **应对机制**：角色如何应对这一创伤  
 
-### Formative Relationships
+### 关键关系
 
-- **Family Dynamics**: Parents, siblings, family structure
-- **Key Friendships**: Influences from peers
-- **Romantic History**: Past relationships and their impact
-- **Mentors/Role Models**: Who shaped their values
-- **Enemies/Rivals**: Antagonistic relationships that defined them
+- **家庭关系**：父母、兄弟姐妹、家庭结构  
+- **重要友谊**：来自朋友或同伴的影响  
+- **恋爱经历**：过去的恋情及其影响  
+- **导师 / 榜样**：塑造其价值观的人  
+- **敌人 / 对手**：定义他们的对抗关系  
 
-### Life History
+### 人生经历
 
-- **Childhood**: Key events, family situation, early personality
-- **Adolescence**: Identity formation, major choices, first loves/losses
-- **Young Adulthood**: Independence, career/path choices, relationships
-- **Current Situation**: Where story finds them
+- **童年**：关键事件、家庭状况、早期性格  
+- **青春期**：身份形成、重大选择、初恋或失去  
+- **青年时期**：独立、职业或人生道路选择、人际关系  
+- **当前状态**：故事开始时的处境  
 
-## Character Arc Types
+## 角色成长弧类型
 
-### Positive Change Arc
+### 正向成长弧
 
-**Structure:**
+**结构：**
 
-1. Lie they believe
-2. Want vs. Need established
-3. First glimpse of truth
-4. Rejection of truth (return to lie)
-5. Moment of truth (crisis)
-6. Choice to embrace truth
-7. New worldview demonstrated
+1. 角色相信的谎言  
+2. “想要”与“需要”建立  
+3. 初次看到真相  
+4. 拒绝真相（回到谎言）  
+5. 真相时刻（危机）  
+6. 选择接受真相  
+7. 展现新的世界观  
 
-**Markers:**
+**标志：**
 
-- Start: Incomplete, held back by misbelief
-- Midpoint: Glimpse growth but not ready
-- Climax: Must choose between lie and truth
-- End: Transformed, living truth
+- 开始：不完整，被错误信念束缚  
+- 中点：看到成长可能但尚未准备好  
+- 高潮：必须在谎言与真相之间做选择  
+- 结局：完成转变，践行真相  
 
-### Flat Arc
+### 平坦成长弧
 
-**Structure:**
+**结构：**
 
-1. Truth known from beginning
-2. World believes lie
-3. Character tested on their truth
-4. Character demonstrates truth
-5. World begins to change
-6. Truth proven through action
+1. 从一开始就知道真相  
+2. 世界相信谎言  
+3. 角色的信念受到考验  
+4. 角色证明真相  
+5. 世界开始改变  
+6. 通过行动证明真相  
 
-**Markers:**
+**标志：**
 
-- Start: Strong in beliefs
-- Midpoint: Severely tested
-- Climax: Greatest test of faith
-- End: Changed the world, not themselves
+- 开始：信念坚定  
+- 中点：遭遇严峻考验  
+- 高潮：最大信念考验  
+- 结局：改变世界，而非改变自己  
 
-### Negative Arc
+### 负向成长弧
 
-**Structure:**
+**结构：**
 
-1. Flaw/weakness established
-2. Temptation introduced
-3. Small compromises begin
-4. Point of no return crossed
-5. Descent accelerates
-6. Rejection of redemption
-7. Tragic conclusion
+1. 建立缺陷或弱点  
+2. 引入诱惑  
+3. 开始小幅妥协  
+4. 越过不可回头点  
+5. 堕落加速  
+6. 拒绝救赎  
+7. 悲剧性结局  
 
-**Markers:**
+**标志：**
 
-- Start: Flawed but sympathetic
-- Midpoint: Questionable choices
-- Climax: Beyond redemption
-- End: Destroyed or becomes villain
+- 开始：有缺陷但仍令人同情  
+- 中点：做出可疑选择  
+- 高潮：无法挽回  
+- 结局：毁灭或成为反派  
 
-## Relationship Dynamics
+## 关系动态
 
-### Character Relationships Matrix
+### 角色关系矩阵
 
-For each significant relationship, define:
+为每个重要关系定义：
 
-- **Dynamic Type**: Mentor/student, rivals, allies, romance, family
-- **Conflict Source**: What creates tension
-- **Common Ground**: What bonds them
-- **Influence**: How they change each other
-- **Arc**: How relationship evolves
+- **关系类型**：导师 / 学生、对手、盟友、恋人、家庭  
+- **冲突来源**：产生张力的原因  
+- **共同点**：维系关系的因素  
+- **影响**：他们如何改变彼此  
+- **成长弧**：关系如何发展  
 
-### Protagonist-Antagonist Relationship
+### 主角与反派关系
 
-- **Opposition**: How antagonist blocks protagonist's goal
-- **Mirror/Foil**: How they reflect/contrast each other
-- **Personal Stakes**: Why this matters beyond plot
-- **Symmetry**: Similar origins or opposite arc paths
-- **Respect Level**: Do they understand each other?
+- **对立**：反派如何阻碍主角目标  
+- **镜像 / 对照**：他们如何相似或相反  
+- **个人风险**：为什么这场冲突不仅仅是剧情需要  
+- **对称性**：相似起点或相反成长路径  
+- **尊重程度**：他们是否理解彼此  
 
-## Character Voice Development
+## 角色声音塑造
 
-### Dialogue Markers
+### 对话特征
 
-- **Vocabulary Level**: Formal, casual, slang, technical
-- **Sentence Structure**: Short and punchy vs. long and flowing
-- **Favorite Words/Phrases**: Repeated expressions
-- **Topics They Discuss**: What they talk about most
-- **What They Avoid**: Topics they don't address
-- **Lying Tells**: How they behave when dishonest
+- **词汇水平**：正式、随意、俚语、技术性  
+- **句式结构**：短促有力 vs. 长句流畅  
+- **常用词 / 口头禅**：反复使用的表达  
+- **常谈话题**：他们经常谈什么  
+- **回避话题**：他们不谈什么  
+- **说谎迹象**：说谎时的行为  
 
-### Internal Voice (POV Characters)
+### 内心声音（POV角色）
 
-- **Thought Patterns**: Analytical, emotional, scattered, focused
-- **Biases**: How they interpret events
-- **Blind Spots**: What they don't see about themselves
-- **Metaphors**: Types of comparisons they make
-- **Narrative Distance**: Close, intimate vs. distant, observational
+- **思维方式**：理性、情绪化、跳跃、专注  
+- **偏见**：他们如何解读事件  
+- **盲点**：他们看不到自己的什么问题  
+- **比喻类型**：他们倾向用什么类比  
+- **叙事距离**：亲密视角 vs. 观察型视角  
 
-## Character Consistency
+## 角色一致性
 
-### Behavioral Patterns
+### 行为模式
 
-- **Under Stress**: How they react to pressure
-- **When Happy**: How they express joy
-- **When Angry**: Explosive, cold, passive-aggressive
-- **Decision-Making**: Impulsive, analytical, avoidant
-- **Trust**: Quick or slow to trust others
+- **压力下**：如何面对压力  
+- **快乐时**：如何表达快乐  
+- **愤怒时**：爆发型、冷漠型、被动攻击型  
+- **决策方式**：冲动型、分析型、逃避型  
+- **信任**：容易信任还是谨慎信任  
 
-### Core Values
+### 核心价值观
 
-- **Non-Negotiables**: Lines they won't cross
-- **Flexible Areas**: Where they compromise
-- **Value Hierarchy**: Ranking of priorities (family, honor, survival, etc.)
-- **Values Testing**: Scenes where values conflict
+- **不可妥协**：绝不会跨越的底线  
+- **可妥协领域**：可以让步的部分  
+- **价值排序**：家庭、荣誉、生存等优先级  
+- **价值冲突**：价值观发生冲突的情境  
 
-### Growth Indicators
+### 成长指标
 
-- **Early Story**: How they handle situation type X
-- **Mid Story**: How handling of X begins to shift
-- **Late Story**: How they handle X after growth
-- **Demonstration**: Parallel scenes showing change
+- **故事初期**：如何处理情境 X  
+- **故事中期**：处理方式开始变化  
+- **故事后期**：成长后的处理方式  
+- **表现方式**：通过平行情境展现变化  
 
-## Character Roles in Ensemble
+## 群像角色分工
 
-### Ensemble Balance
+### 群像平衡
 
-- **The Leader**: Drives action, makes decisions
-- **The Heart**: Emotional center, unifies group
-- **The Brain**: Strategy, knowledge, analysis
-- **The Warrior**: Action, protection, physical strength
-- **The Wildcard**: Unpredictable, challenges norms
-- **The Conscience**: Moral compass, voice of reason
+- **领导者**：推动行动，做决定  
+- **团队之心**：情感核心，凝聚团队  
+- **智囊**：策略、知识、分析  
+- **战士**：行动力、保护、力量  
+- **变数**：不可预测，挑战常规  
+- **良知**：道德指南针  
 
-### Avoiding Character Redundancy
+### 避免角色重复
 
-- **Different Wants**: Each character pursuing different goals
-- **Different Methods**: Varied approaches to problems
-- **Different Worldviews**: Contrasting perspectives
-- **Different Skills**: Complementary abilities
-- **Different Arcs**: Each on unique journey
+- **不同目标**：每个角色追求不同目标  
+- **不同方法**：解决问题方式不同  
+- **不同世界观**：观点差异  
+- **不同技能**：能力互补  
+- **不同成长弧**：各自独立成长  
 
-## Character Development Questions
+## 角色开发问题
 
-### Surface Level
+### 表层问题
 
-- What do they look like?
-- How do they dress?
-- What's their job/role?
-- Where do they live?
+- 他们长什么样？  
+- 他们怎么穿衣？  
+- 他们的职业 / 角色是什么？  
+- 他们住在哪里？  
 
-### Deeper Level
+### 深层问题
 
-- What do they fear most?
-- What do they desire more than anything?
-- What's their greatest secret?
-- What do they lie to themselves about?
-- What would they sacrifice everything for?
+- 他们最害怕什么？  
+- 他们最渴望什么？  
+- 他们最大的秘密是什么？  
+- 他们对自己撒了什么谎？  
+- 他们愿意为谁 / 为何牺牲一切？  
 
-### Behavioral Level
+### 行为层面
 
-- How do they treat people with less power?
-- What makes them laugh?
-- What makes them cry?
-- When do they lie, and why?
-- How do they handle failure?
+- 他们如何对待比自己弱势的人？  
+- 什么让他们大笑？  
+- 什么让他们哭？  
+- 他们什么时候说谎？为什么？  
+- 他们如何面对失败？  
 
-### Thematic Level
+### 主题层面
 
-- What do they represent in the story?
-- What question does their arc answer?
-- How do they embody or challenge the theme?
-- What truth do they discover?
+- 他们在故事中象征什么？  
+- 他们的成长弧回答什么问题？  
+- 他们如何体现或挑战主题？  
+- 他们最终发现了什么真理？  
 
-## Character Testing Scenarios
+## 角色测试场景
 
-To ensure character depth, test them against:
+为了确保角色深度，可测试：
 
-1. **Moral Dilemma**: Force choice between two values
-2. **Loss**: Take away something they depend on
-3. **Temptation**: Offer something they want vs. need
-4. **Betrayal**: Test their trust and forgiveness
-5. **Sacrifice**: Force them to give up something important
-6. **Revelation**: Expose a truth they've been avoiding
-7. **Isolation**: Remove their support system
-8. **Power**: Give them control and see how they use it
+1. **道德困境**：在两个价值之间做选择  
+2. **失去**：夺走他们依赖的东西  
+3. **诱惑**：提供“想要”与“需要”的冲突  
+4. **背叛**：测试信任与原谅  
+5. **牺牲**：必须放弃重要事物  
+6. **真相揭露**：揭开他们回避的事实  
+7. **孤立**：移除支持系统  
+8. **权力**：赋予权力观察其使用方式  
 
-## Red Flags for Weak Characters
+## 弱角色的警示信号
 
-### Avoid:
+### 避免：
 
-- **Mary Sue/Gary Stu**: Too perfect, no real flaws
-- **Inconsistent Behavior**: Acts differently for plot convenience
-- **No Agency**: Things happen to them, they don't drive action
-- **Single-Note**: Only one personality trait
-- **No Growth**: Same at end as beginning (unless flat arc)
-- **Reactive Only**: Never makes proactive choices
-- **Exposition Puppet**: Exists to explain things
-- **Token Diversity**: Defined only by identity marker
+- **Mary Sue / Gary Stu**：过于完美，没有缺点  
+- **行为不一致**：为剧情方便而改变性格  
+- **没有主动性**：事件发生在他们身上，而非他们推动  
+- **单一性格**：只有一个特征  
+- **没有成长**：结尾与开头一样（除非平坦弧）  
+- **只被动反应**：从不主动行动  
+- **信息工具人**：只用于解释剧情  
+- **象征性多样性**：只以身份标签定义  
 
-### Fix By:
+### 修复方法：
 
-- Adding meaningful flaws and consequences
-- Establishing behavioral patterns and motivations
-- Giving them goals and plans they actively pursue
-- Layering contradictory traits and complexity
-- Planning clear arc with transformation
-- Creating scenes where they initiate action
-- Giving them purpose beyond information delivery
-- Developing full personality, backstory, and individual arc
+- 增加有意义的缺陷与后果  
+- 建立稳定的行为模式与动机  
+- 给他们主动追求的目标与计划  
+- 增加矛盾性格与复杂性  
+- 规划清晰成长弧  
+- 设计角色主动推动剧情的场景  
+- 赋予他们超越信息传递的作用  
+- 构建完整个性、背景与独立成长弧
