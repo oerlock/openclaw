@@ -1,593 +1,308 @@
 ---
 name: storyboard-manager
-description: Assist with long-form story planning, character development, chapter drafting, timeline tracking, and consistency checks for fiction projects that use markdown folders like characters/ and chapters/. Use when asked to develop characters, outline acts, draft the next chapter, or audit continuity across a story repo.
+description: 用于长篇故事创作与管理：角色设定、剧情结构规划、章节写作、时间线追踪与一致性检查。适用于包含 characters/、chapters/、story-planning/ 等目录的 Markdown 写作项目。
 metadata: { "openclaw": { "emoji": "🎬", "requires": { "bins": ["python3"] } } }
 ---
 
 # Storyboard Manager
 
-## Overview
+## 概览
 
-The Storyboard Manager skill equips OpenClaw/Codex with specialized knowledge and tools for creative writing workflows. It provides frameworks for character development, story structure patterns, automated timeline tracking, and consistency checking across narrative projects. This skill automatically adapts to various storyboard folder structures while maintaining best practices for novel, screenplay, and serialized fiction writing.
+`storyboard-manager` 是一个面向创作工作流的技能，帮助你在写作过程中保持：
 
-## Core Capabilities
+- 角色设定一致
+- 剧情结构清晰
+- 章节推进有节奏
+- 时间线与事实不冲突
 
-The skill provides four main capabilities:
+该技能适配常见小说/剧本目录结构，并提供两个可执行脚本：
 
-### 1. Character Development & Management
+- `scripts/timeline_tracker.py`：时间线提取与追踪
+- `scripts/consistency_checker.py`：一致性问题检测
 
-Support creating deep, consistent character profiles with backstories, arcs, and relationships.
+## 适用目录结构（自动识别）
 
-### 2. Story Planning & Structure
+常见目录/文件：
 
-Guide plot development using established frameworks (Three-Act, Hero's Journey, Save the Cat, etc.) and help organize narrative elements.
+- 角色：`characters/`、`Characters/`、`cast/`
+- 正文：`chapters/`、`Chapters/`、`scenes/`、`story/`
+- 规划：`story-planning/`、`planning/`、`outline/`、`notes/`
+- 总览：`summary.md`、`overview.md`、`README.md`
 
-### 3. Chapter & Scene Writing
+若项目尚未规范，建议最小结构：
 
-Generate chapter content, scene breakdowns, and dialogue that maintains consistency with established characters and plot.
+- `characters/`
+- `chapters/`
+- `story-planning/`
+- `summary.md`
 
-### 4. Timeline Tracking & Consistency Checking
+## 工作流选择
 
-Use automated tools to verify chronological consistency, character continuity, and world-building coherence.
+根据用户诉求选择流程：
 
-## Detecting Project Structure
+1. **角色相关**（“完善角色”“写人物小传”“角色弧线”）
+   - 进入「角色开发流程」
+2. **剧情规划相关**（“大纲”“Act 2”“节奏设计”）
+   - 进入「故事规划流程」
+3. **正文创作相关**（“写下一章”“续写场景”）
+   - 进入「章节写作流程」
+4. **检查分析相关**（“查冲突”“看时间线”）
+   - 时间线：运行 `timeline_tracker.py`
+   - 一致性：运行 `consistency_checker.py`
 
-The Storyboard Manager automatically detects and adapts to various folder organizations. Look for these common directory patterns:
+---
 
-**Character folders:** `characters/`, `Characters/`, `cast/`, `Cast/`
-**Chapter folders:** `chapters/`, `Chapters/`, `scenes/`, `Scenes/`, `story/`
-**Planning folders:** `story-planning/`, `planning/`, `outline/`, `notes/`
-**Summary files:** `summary.md`, `README.md`, `overview.md`
+## 角色开发流程
 
-When triggered, scan the project root to identify the structure and adjust workflows accordingly. If no standard structure exists, recommend organizing files using the pattern: `characters/`, `chapters/`, `story-planning/`, and `summary.md`.
+### 1) 收集上下文
 
-## Workflow Decision Tree
+先阅读现有角色文件，确认：
 
-Use this decision tree to determine the appropriate workflow:
+- 现有模板风格
+- 角色关系网
+- 题材与语气
+- 已占用的人设功能位
 
-```
-User Request
-├─ Character-related? ("develop character," "create backstory," "character arc")
-│  └─ → Character Development Workflow
-│
-├─ Planning/Plot? ("outline story," "plan act 2," "plot structure")
-│  └─ → Story Planning Workflow
-│
-├─ Writing content? ("write chapter," "generate scene," "continue story")
-│  └─ → Chapter/Scene Writing Workflow
-│
-└─ Checking/Analysis? ("check consistency," "track timeline," "find contradictions")
-   ├─ Timeline? → Use timeline_tracker.py script
-   └─ Consistency? → Use consistency_checker.py script
-```
+### 2) 按需加载参考资料
 
-## Character Development Workflow
+需要深度人物设计时，读取：
 
-### Step 1: Gather Context
+- `{baseDir}/references/character_development.md`
 
-Before developing a character, read existing character files to understand:
-
-- Established naming conventions and profile format
-- Existing characters and relationships
-- Story genre and tone
-- Character archetypes already in use
-
-Review existing character files in the characters directory.
-
-### Step 2: Access Character Development Framework
-
-When detailed character guidance is needed, read `references/character_development.md` which contains:
-
-- Core character elements (personality, motivation, goals)
-- Backstory framework (ghost/wound, formative relationships)
-- Character arc types (positive change, flat, negative)
-- Relationship dynamics
-- Voice development techniques
-- Consistency guidelines
-
-To efficiently find specific guidance, use `rg` to search for relevant sections:
+可用 `rg` 快速定位：
 
 ```bash
-# Example: Find guidance on character arcs
-rg -n "character arc" {baseDir}/references/character_development.md
+rg -n "角色弧|动机|创伤|关系" {baseDir}/references/character_development.md
 ```
 
-### Step 3: Develop Character Profile
+### 3) 输出角色档案（建议字段）
 
-Create or enhance character profiles with these essential elements:
+- 基础信息：姓名、年龄、外观、定位
+- 背景与创伤：关键过去事件、形成原因
+- 目标系统：Want/Need、动机、风险
+- 弧线变化：起点误信念 → 转折 → 终点
+- 关系动态：盟友/对手/导师等及演变
+- 声音标签：语气、词汇、习惯表达
 
-**Basic Information**
+### 4) 一致性回看
 
-- Name, age, role, physical appearance
-- Key personality traits (both positive and negative)
+与以下内容交叉检查：
 
-**Background**
+- 其他角色档案
+- 剧情规划文档
+- `summary.md` 的世界观与主题
 
-- Origin and formative experiences
-- Ghost/wound that shapes their behavior
-- Key relationships and family dynamics
+### 5) 写入文件
 
-**Character Arc**
+建议路径：`characters/<character-name>.md`
 
-- Starting belief or flaw
-- Want vs. Need (external goal vs. internal growth)
-- Transformation journey
-- End state
+---
 
-**Relationships**
+## 故事规划流程
 
-- Connections to other characters
-- Dynamic types (ally, rival, mentor, etc.)
-- How relationships evolve
+### 1) 评估当前规划状态
 
-**Unique Elements**
+先阅读已有大纲/计划，明确：
 
-- Abilities, skills, or special knowledge
-- Secrets or hidden aspects
-- Voice/speech patterns
-- Character-specific quirks
+- 核心 premise
+- 已确定关键情节节点
+- 目标读者与题材
+- 主题问题
+- 当前采用的结构范式
 
-### Step 4: Ensure Consistency
+### 2) 按需加载结构参考
 
-Cross-reference with:
+读取：
 
-- Existing character profiles (avoid redundancy in roles/traits)
-- Story planning documents (ensure alignment with plot needs)
-- Summary/overview (match genre and tone)
+- `{baseDir}/references/story_structures.md`
 
-### Step 5: Create or Update File
-
-Write the character profile to `characters/[character-name].md` using markdown format. Match the existing style and structure found in other character files.
-
-## Story Planning Workflow
-
-### Step 1: Assess Current Planning State
-
-Read existing planning documents to understand:
-
-- Story concept and premise
-- Established plot points or outline
-- Target audience and genre
-- Themes and central questions
-- Planned structure (if any)
-
-Look in folders like `story-planning/`, `outline/`, or files like `summary.md`.
-
-### Step 2: Access Story Structure Reference
-
-For detailed structural guidance, read `references/story_structures.md` which includes:
-
-- Three-Act Structure
-- Hero's Journey (Campbell's Monomyth)
-- Save the Cat Beat Sheet
-- Character arc templates
-- Scene structure components
-- Pacing guidelines by genre
-- Subplot integration techniques
-- Genre-specific structures
-
-Use `rg` to find specific frameworks:
+可用 `rg` 快速定位：
 
 ```bash
-# Example: Find Three-Act Structure details
-rg -n "Three-Act Structure" {baseDir}/references/story_structures.md
+rg -n "三幕|英雄之旅|Save the Cat|节奏" {baseDir}/references/story_structures.md
 ```
 
-### Step 3: Determine Structure Needs
+### 3) 选择结构框架（示例）
 
-Based on the user's request and story genre, recommend appropriate frameworks:
+- 悬疑/惊悚：三幕 + 强中点反转
+- 冒险/奇幻：英雄之旅
+- 青春/当代：Save the Cat 强情绪节点
+- 文学向：角色弧优先
+- 浪漫向：关系推进节点优先
 
-- **Thriller/Mystery**: Three-Act with strong midpoint reversal
-- **Fantasy/Adventure**: Hero's Journey for quest narratives
-- **YA/Contemporary**: Save the Cat for tight emotional beats
-- **Literary Fiction**: Focus on character arc structure
-- **Romance**: Genre-specific structure with relationship beats
+### 4) 产出规划文档
 
-### Step 4: Develop Planning Document
+建议包含：
 
-Create or enhance planning documents with:
+- 故事概述（2~3 句）
+- 结构分解（Act/章节）
+- 角色弧与主线对齐
+- 世界规则（如有）
+- 时间线骨架
 
-**Story Overview**
+### 5) 写入文件
 
-- Premise in 2-3 sentences
-- Genre, target audience, tone
-- Central themes and questions
+建议路径：`story-planning/<document-name>.md`
 
-**Plot Structure**
+---
 
-- Act/chapter breakdown with key events
-- Inciting incident and plot points
-- Midpoint twist or revelation
-- Climax and resolution
+## 章节写作流程
 
-**Character Arcs**
+### 1) 写前读取
 
-- How each main character transforms
-- Arc integration with plot beats
+写章节前至少阅读：
 
-**World-Building Elements** (if applicable)
+- 相关角色档案
+- 结构/大纲文档
+- 前 1~2 章正文
+- `summary.md`
 
-- Setting and locations
-- Magic systems or technology
-- Social structures or rules
-- Historical context
+### 2) 明确章节目标
 
-**Timeline**
+- 所处位置（全书进度）
+- POV 角色
+- 场景目标（角色想要什么）
+- 冲突来源
+- 场景结果（最好带新问题）
 
-- Story duration
-- Key event sequence
-- Pacing considerations
+### 3) 场景组织建议
 
-### Step 5: Create Planning File
+- **Scene（行动）**：目标 → 冲突 → 受挫
+- **Sequel（反应）**：反应 → 困境 → 决策
 
-Write planning documents to `story-planning/[document-name].md`. Use clear hierarchical structure with markdown headers for easy navigation.
+并穿插高张力与低张力段落。
 
-## Chapter & Scene Writing Workflow
+### 4) 保持角色声音稳定
 
-### Step 1: Gather Story Context
+写作时对齐角色：
 
-Before writing any content, comprehensively read:
+- 性格与价值取向
+- 语言习惯
+- 压力下行为模式
+- 当前弧线阶段
 
-**Character Files**: All relevant character profiles to understand voices, motivations, arcs
-**Planning Documents**: Story structure, plot points, current story position
-**Previous Chapters**: Recent chapters to maintain continuity (read at least 1-2 prior chapters)
-**Summary**: Overall story premise and themes
+### 5) 添加时间标记
 
-This ensures the new content aligns with established elements.
+可使用：
 
-### Step 2: Identify Chapter Requirements
+- `**Timeline:** Day 5, Evening`
+- 或叙述型时间提示（如“事发三天后”）
 
-Determine:
+### 6) 文件建议
 
-- **Story Position**: Where does this fit in the overall structure?
-- **POV Character**: Whose perspective?
-- **Scene Goal**: What does the POV character want in this scene?
-- **Conflict**: What opposes their goal?
-- **Outcome**: How does the scene end? (typically with a complication)
-- **Character Development**: What arc beats occur here?
-- **Plot Advancement**: What story questions are raised or answered?
+建议路径：`chapters/chapter-<number>.md` 或 `chapters/<chapter-name>.md`
 
-### Step 3: Structure the Chapter
-
-Apply scene structure components:
-
-**Scene (Action)**
-
-1. Goal - What the POV character pursues
-2. Conflict - Opposition encountered
-3. Disaster - Negative outcome that propels forward
-
-**Sequel (Reaction)**
-
-1. Reaction - Emotional response to disaster
-2. Dilemma - Processing options
-3. Decision - Choice leading to next goal
-
-Alternate between high-tension (action, conflict) and low-tension (reflection, world-building) beats for pacing.
-
-### Step 4: Write with Character Consistency
-
-Maintain character voice by referencing:
-
-- Established personality traits
-- Speech patterns and vocabulary
-- Behavioral patterns (under stress, when happy, decision-making style)
-- Current position in character arc
-- Relationships with other characters present
-
-### Step 5: Integrate Timeline Markers
-
-Include timeline references to maintain chronological clarity:
-
-- Explicit markers: "Day 3," "Two weeks later"
-- Implicit markers: Time of day, seasonal cues, event references
-- Format: `**Timeline:** Day 5, Evening` in chapter header or as section break
-
-### Step 6: Create Chapter File
-
-Write chapter content to `chapters/chapter-[number].md` or `chapters/[chapter-name].md`. Include:
-
-**Chapter Header**
+可用头部模板：
 
 ```markdown
-# Chapter [Number]: [Optional Title]
+# Chapter <Number>: <Title>
 
-**Timeline:** [When this occurs]
-**POV:** [Character name]
-**Location:** [Where this takes place]
+**Timeline:** <time>
+**POV:** <character>
+**Location:** <location>
 ```
 
-**Chapter Content**
+### 7) 章节后登记
 
-- Scene-by-scene breakdown
-- Dialogue and action
-- Character thoughts (for POV character)
-- Descriptive elements
+记录本章新增信息：
 
-### Step 7: Note Continuity Elements
+- 角色新事实
+- 线索与伏笔
+- 世界设定新增条目
+- 时间节点
 
-After writing, document any new information introduced:
+---
 
-- Character revelations or development
-- Plot points or clues
-- World-building details
-- Timeline events
+## 时间线追踪
 
-This helps maintain consistency in future chapters.
+### 何时使用
 
-## Timeline Tracking
+- 用户要求梳理事件先后
+- 发现时间跳跃不清晰
+- 需要找缺失时间标记
 
-### When to Use Timeline Tracking
-
-Invoke the timeline tracker when:
-
-- User requests timeline analysis or event sequencing
-- Checking chronological consistency
-- Planning event order across chapters
-- Identifying unmarked time periods
-
-### Running the Timeline Tracker
-
-Execute the script from the project root:
+### 运行命令
 
 ```bash
 python3 {baseDir}/scripts/timeline_tracker.py . --output markdown
 ```
 
-**Output format options:**
+输出格式：
 
-- `markdown` - Human-readable report (default)
-- `json` - Structured data for further processing
+- `markdown`（默认）
+- `json`
 
-### Understanding Timeline Output
+### 结果解读与处理
 
-The script provides:
+重点关注：
 
-**Statistics**
+- 总事件数 / 总角色数
+- 章节级事件顺序
+- 缺失时间标记的片段
 
-- Total events tracked
-- Total characters appearing
-- Events per character
+处理方式：
 
-**Timeline View**
+1. 补全章节时间标记
+2. 修正前后顺序冲突
+3. 标记“空白时间段”是否需要补写
 
-- Chronological sequence of events
-- Chapter/scene locations
-- Characters present in each event
-- Preview of event content
+---
 
-**Warnings**
+## 一致性检查
 
-- Events without timeline markers
-- Characters mentioned but not defined in character files
+### 何时使用
 
-### Acting on Timeline Results
+- 用户要求检查逻辑或设定冲突
+- 大幅修改角色/剧情后
+- 完成阶段稿前的质量检查
 
-After running the tracker:
-
-1. **Review warnings** - Address missing timeline markers by adding them to chapters
-2. **Check sequence** - Verify events occur in logical order
-3. **Identify gaps** - Look for time periods without events
-4. **Character tracking** - Ensure characters appear consistently with their arc
-
-Add timeline markers to chapters where missing:
-
-```markdown
-**Timeline:** Day 7, Morning
-```
-
-Or use inline markers:
-
-```markdown
-Three days had passed since the incident...
-```
-
-## Consistency Checking
-
-### When to Use Consistency Checking
-
-Invoke the consistency checker when:
-
-- User requests consistency analysis
-- Before finalizing chapters or acts
-- After making significant character or plot changes
-- When tracking contradictions or errors
-
-### Running the Consistency Checker
-
-Execute the script from the project root:
+### 运行命令
 
 ```bash
 python3 {baseDir}/scripts/consistency_checker.py . --output markdown
 ```
 
-**Output format options:**
+输出格式：
 
-- `markdown` - Human-readable report with issue details (default)
-- `json` - Structured data for programmatic analysis
+- `markdown`（默认）
+- `json`
 
-### Understanding Consistency Output
+### 严重级别
 
-The script identifies issues in three severity levels:
+- `critical`：关键冲突（应优先修复）
+- `warning`：高风险不一致
+- `info`：轻微差异（如命名大小写）
 
-**Critical (🔴)**
+### 建议修复流程
 
-- Major contradictions requiring immediate attention
-- Character appearing after death
-- Fundamental plot contradictions
+1. 读取报告中的文件位置
+2. 确认以哪份信息为准（通常人物档案更权威）
+3. 修正文稿
+4. 重新运行脚本确认问题已消失
 
-**Warning (⚠️)**
+---
 
-- Potential inconsistencies to review
-- Age discrepancies
-- Physical description contradictions
-- Relationship conflicts
+## 最佳实践
 
-**Info (ℹ️)**
+- 渐进加载上下文：先看结构，再按任务加载参考文档
+- 避免一次性把所有参考文件塞入上下文
+- 每次产出后记录新增事实，降低后续冲突概率
+- 多 POV 作品中，明确“谁知道什么”
 
-- Minor issues or variations
-- Name capitalization inconsistencies
-- Stylistic variations
+## 资源说明
 
-### Acting on Consistency Results
+### `scripts/timeline_tracker.py`
 
-For each issue reported:
+提取并组织 Markdown 文档中的事件时间信息，帮助建立可追踪的故事时间线。
 
-1. **Read flagged locations** - Review the specific files mentioned
-2. **Determine truth** - Decide which version is correct (usually character profile is authoritative)
-3. **Update files** - Fix contradictions using the Edit tool
-4. **Re-run checker** - Verify fixes resolved the issues
+### `scripts/consistency_checker.py`
 
-**Example workflow for character age inconsistency:**
+扫描角色属性、描述、命名与基础世界设定，输出分级一致性问题。
 
-```markdown
-Issue: Age inconsistency for Maya
+### `references/character_development.md`
 
-- Profile: 18 years old
-- Chapter 3: mentions "21-year-old Maya"
+角色塑造参考：角色核心要素、动机系统、创伤模型、关系与弧线设计。
 
-Fix: Edit chapter-3.md to change "21-year-old" to "18-year-old"
-```
+### `references/story_structures.md`
 
-### Consistency Checking Limitations
-
-The automated checker catches:
-
-- Physical attribute contradictions
-- Age discrepancies
-- Name variations
-- Basic world-building facts
-
-The checker cannot catch:
-
-- Subtle personality inconsistencies
-- Complex plot logic errors
-- Thematic contradictions
-- Nuanced relationship changes
-
-Manual review is still essential for deep consistency.
-
-## Best Practices
-
-### Progressive Context Loading
-
-Don't load all reference files at once. Instead:
-
-1. Scan project structure first
-2. Read only relevant character files for the current task
-3. Access reference documentation only when specific guidance is needed
-4. Use `rg` to find specific sections in large reference files
-
-### Maintaining Genre Voice
-
-Match the story's established tone:
-
-- **YA**: Present tense, immediate emotional connection, contemporary language
-- **Fantasy**: Rich descriptive language, world-building integration
-- **Thriller**: Short sentences, high tension, sensory details
-- **Literary**: Complex prose, internal reflection, symbolic elements
-
-Reference the summary.md to identify target audience and adjust accordingly.
-
-### Character Arc Integration
-
-Every chapter should serve character arcs:
-
-- Track where each character is in their arc
-- Show incremental change, not sudden transformation
-- Use plot events to test character beliefs
-- Demonstrate growth through choices and behavior
-
-### Balancing Show vs. Tell
-
-For narrative writing:
-
-- **Show** emotions through actions, dialogue, physical reactions
-- **Tell** to compress time, provide necessary information efficiently
-- Use character-filtered description (what would this POV character notice?)
-
-### Handling Multiple POV
-
-When stories have multiple perspectives:
-
-- Create distinct voices for each POV character
-- Ensure each POV section advances both that character's arc and the plot
-- Vary sentence structure and vocabulary by character
-- Track what each character knows vs. doesn't know
-
-## Common User Requests & Responses
-
-### "Help me develop a character backstory"
-
-1. Read existing character files for context
-2. Read the character profile (if exists) to enhance
-3. Access character_development.md reference for backstory framework
-4. Create detailed backstory covering: ghost/wound, formative relationships, key history
-5. Integrate with their character arc and story role
-
-### "Write the next chapter"
-
-1. Read summary.md and story planning documents
-2. Read all character profiles for characters appearing in chapter
-3. Read previous 2 chapters for continuity
-4. Identify chapter position in story structure
-5. Write chapter with scene/sequel structure
-6. Include timeline markers and POV/location headers
-
-### "Outline Act 2"
-
-1. Read summary and any existing planning documents
-2. Access story_structures.md for structural guidance
-3. Identify act 2 requirements (complications, midpoint, rising tension)
-4. Create beat-by-beat outline aligned with character arcs
-5. Note how plot and character arcs intersect
-
-### "Check my story for consistency"
-
-1. Run consistency_checker.py script
-2. Review output identifying issues
-3. Read flagged files to understand contradictions
-4. Recommend specific fixes for each issue
-5. Offer to make edits if user confirms
-
-### "Track the timeline of my story"
-
-1. Run timeline_tracker.py script
-2. Review output showing event sequence
-3. Identify gaps or inconsistencies in chronology
-4. Recommend adding timeline markers where missing
-5. Provide timeline summary organized by character or chapter
-
-### "What structure should I use for my thriller?"
-
-1. Access story_structures.md reference
-2. Recommend Three-Act Structure or Save the Cat
-3. Explain thriller-specific requirements (escalating tension, ticking clock)
-4. Provide beat sheet adapted to their story concept
-5. Offer to create detailed planning document
-
-## Resources
-
-### scripts/timeline_tracker.py
-
-Python script that analyzes markdown files to extract and organize timeline events. Tracks character appearances, identifies time markers, groups events chronologically, and flags consistency issues.
-
-**Usage:** Run from project root with `python3 {baseDir}/scripts/timeline_tracker.py .`
-
-### scripts/consistency_checker.py
-
-Python script that detects inconsistencies in character details, physical descriptions, ages, names, and world-building facts across all story files. Outputs severity-ranked issues with file locations.
-
-**Usage:** Run from project root with `python3 {baseDir}/scripts/consistency_checker.py .`
-
-### references/character_development.md
-
-Comprehensive framework for creating multi-dimensional characters including core elements, backstory structure, arc types, relationship dynamics, voice development, and consistency guidelines.
-
-**Load when:** Developing new characters, enhancing existing profiles, resolving character consistency issues, or planning character arcs.
-
-### references/story_structures.md
-
-Detailed reference covering major story structures (Three-Act, Hero's Journey, Save the Cat), character arc templates, scene structure, pacing guidelines, plot development techniques, and genre-specific structures.
-
-**Load when:** Planning story outline, structuring acts, organizing plot beats, determining pacing, or applying specific narrative frameworks.
+结构参考：三幕、英雄之旅、Save the Cat、场景与节奏组织方法。

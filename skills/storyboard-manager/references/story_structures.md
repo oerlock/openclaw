@@ -1,163 +1,176 @@
-# Story Structure Reference
+# 故事结构参考
 
-This reference provides common story structures and frameworks for planning narratives.
+本参考用于快速选择并落地叙事结构，兼顾“可写性”和“可维护性”。
 
-## Three-Act Structure
+## 1. 三幕结构（通用推荐）
 
-### Act One: Setup (25% of story)
+### 第一幕：建立（约 25%）
 
-- **Hook**: Opening scene that grabs attention
-- **Inciting Incident**: Event that disrupts the protagonist's normal world
-- **First Plot Point**: Decision/event that propels protagonist into Act Two (typically at 25% mark)
+- Hook：开场抓点
+- Inciting Incident：引发主线的事件
+- First Plot Point：主角被迫进入新阶段
 
-### Act Two: Confrontation (50% of story)
+### 第二幕：对抗（约 50%）
 
-- **Rising Action**: Series of obstacles and complications
-- **Midpoint**: Major revelation or reversal (at 50% mark)
-- **Pinch Points**: Moments that increase pressure on protagonist
-- **Second Plot Point**: Lowest point/crisis that leads into Act Three (at 75% mark)
+- 持续升级的阻碍与代价
+- Midpoint：重大反转/信息揭示
+- Pinch Points：压力强化节点
+- Second Plot Point：跌入低谷，逼近最终选择
 
-### Act Three: Resolution (25% of story)
+### 第三幕：收束（约 25%）
 
-- **Climax**: Final confrontation or decision
-- **Falling Action**: Immediate consequences of climax
-- **Resolution**: New normal/equilibrium established
+- Climax：终局冲突
+- Falling Action：后果扩散
+- Resolution：新秩序建立
 
-## Hero's Journey (Joseph Campbell)
+适配场景：多数类型作品，尤其是悬疑、冒险、商业类型小说。
 
-1. **Ordinary World**: Hero's normal life
-2. **Call to Adventure**: Challenge or quest presented
-3. **Refusal of the Call**: Initial hesitation or fear
-4. **Meeting the Mentor**: Guidance or magical aid
-5. **Crossing the Threshold**: Commitment to the journey
-6. **Tests, Allies, and Enemies**: Learning the rules of the new world
-7. **Approach to the Inmost Cave**: Preparation for major challenge
-8. **Ordeal**: Greatest fear/challenge faced
-9. **Reward**: Achievement of goal or new knowledge
-10. **The Road Back**: Return journey begins
-11. **Resurrection**: Final test with everything at stake
-12. **Return with the Elixir**: Hero returns transformed
+---
 
-## Save the Cat Beat Sheet (Blake Snyder)
+## 2. 英雄之旅（成长/冒险向）
 
-1. **Opening Image**: Snapshot of protagonist's world before change
-2. **Theme Stated**: Central question or theme introduced
-3. **Setup**: Establish protagonist's world, flaws, and stakes
-4. **Catalyst**: Event that starts the story (at 10% mark)
-5. **Debate**: Internal conflict about whether to act
-6. **Break into Two**: Protagonist commits to journey (at 20-25% mark)
-7. **B Story**: Subplot introduced (often romantic or thematic)
-8. **Fun and Games**: Promise of the premise delivered
-9. **Midpoint**: False victory or defeat (at 50% mark)
-10. **Bad Guys Close In**: External and internal pressure increases
-11. **All Is Lost**: Lowest point (at 75% mark)
-12. **Dark Night of the Soul**: Protagonist processes loss
-13. **Break into Three**: Solution discovered (at 80% mark)
-14. **Finale**: Climax and resolution
-15. **Final Image**: Parallel to opening showing change
+常见 12 步：
 
-## Character Arc Templates
+1. 日常世界
+2. 冒险召唤
+3. 拒绝召唤
+4. 遇见导师
+5. 跨越门槛
+6. 试炼与盟友敌人
+7. 接近核心险境
+8. 最大考验
+9. 获得奖赏
+10. 归途
+11. 复活考验
+12. 带着“灵药”回归
 
-### Positive Change Arc
+适配场景：奇幻、冒险、史诗成长线。
 
-- **Lie Believed**: Character starts believing something false about themselves/world
-- **Want vs. Need**: What they think they want vs. what they actually need
-- **Ghost/Wound**: Past trauma influencing present behavior
-- **Moment of Truth**: Forced to choose between lie and truth
-- **Resolution**: Embraces truth and grows
+---
 
-### Flat Arc
+## 3. Save the Cat（节拍驱动）
 
-- **Truth Known**: Character already knows the truth
-- **World's Lie**: The world around them believes a lie
-- **Testing**: Character's truth is challenged repeatedly
-- **Impact**: Character changes the world around them
-- **Affirmation**: Character's truth proven correct
+常用节拍：
 
-### Negative Arc
+- Opening Image
+- Theme Stated
+- Set-Up
+- Catalyst
+- Debate
+- Break into Two
+- B Story
+- Fun and Games
+- Midpoint
+- Bad Guys Close In
+- All Is Lost
+- Dark Night of the Soul
+- Break into Three
+- Finale
+- Final Image
 
-- **Initial Weakness**: Character has a flaw or belief
-- **Escalation**: Flaw grows worse through choices
-- **Point of No Return**: Character chooses darkness
-- **Descent**: Consequences spiral
-- **Tragic End**: Character destroyed or becomes antagonist
+适配场景：需要高可控节奏和明确情绪起伏的作品（YA、商业长篇等）。
 
-## Scene Structure
+---
 
-### Scene Components
+## 4. 场景级结构（写章时最实用）
 
-1. **Goal**: What the POV character wants in this scene
-2. **Conflict**: Opposition to achieving the goal
-3. **Disaster**: Outcome (usually negative) that propels to next scene
+推荐采用 Scene / Sequel 双段模型：
 
-### Sequel Components (reaction to scene)
+### Scene（行动段）
 
-1. **Reaction**: Emotional response to disaster
-2. **Dilemma**: Working through options
-3. **Decision**: Choice that leads to next goal/scene
+- Goal：角色当下目标
+- Conflict：目标受阻
+- Outcome：结果（最好不是完全成功）
 
-## Pacing Guidelines
+### Sequel（反应段）
 
-### Chapter Length by Genre
+- Reaction：情绪反应
+- Dilemma：两难选择
+- Decision：进入下一场景的决策
 
-- **Thriller/Mystery**: 2,000-3,000 words (faster pace)
-- **Fantasy/Sci-Fi**: 3,000-5,000 words (world-building needs)
-- **Romance**: 2,500-4,000 words (emotional beats)
-- **Literary Fiction**: 2,000-6,000 words (varies widely)
-- **YA**: 2,000-3,500 words (shorter attention span)
+好处：既能推进情节，又能稳定角色弧线。
 
-### Tension Management
+---
 
-- **High-tension scenes**: Action, conflict, revelations (shorter, punchier)
-- **Low-tension scenes**: Character development, world-building (can be longer)
-- **Rhythm**: Alternate between high and low tension
-- **Overall trend**: Tension should increase as story progresses
+## 5. 节奏控制建议
 
-## Plot Development
+### 常见失衡
 
-### Conflict Types
+- 开局解释过多，事件过少
+- 中段重复冲突，不产生新信息
+- 结尾过快收束，情绪来不及沉淀
 
-1. **Character vs. Character**: Antagonist opposition
-2. **Character vs. Self**: Internal struggle
-3. **Character vs. Society**: Against norms/systems
-4. **Character vs. Nature**: Environmental challenges
-5. **Character vs. Technology**: Man vs. machine
-6. **Character vs. Fate**: Against destiny/prophecy
+### 修复方式
 
-### Subplot Integration
+- 每章至少推进一项：剧情 / 角色 / 世界信息
+- 中段每隔数章必须出现“质变节点”（信息反转、关系逆转、成本升级）
+- 临近结尾时压缩支线，强化主冲突
 
-- **Mirror subplots**: Reflect main theme differently
-- **Contrast subplots**: Show opposite approach to theme
-- **Complication subplots**: Add obstacles to main plot
-- **Resolution rule**: Resolve minor subplots before climax, major ones during/after
+---
 
-## Genre-Specific Structures
+## 6. 子线与主线整合
 
-### Mystery/Thriller
+每条子线都要回答：
 
-- Introduction of crime/mystery
-- Investigation and clue discovery
-- Red herrings and misdirection
-- Escalating danger
-- Revelation and confrontation
-- Resolution and explanation
+- 与主线有什么功能关系（映照/反衬/补充信息）
+- 在哪里并入主线
+- 不合并会造成什么后果
 
-### Romance
+若子线长期与主线无耦合，优先删减或合并。
 
-- Meet-cute or introduction
-- Attraction develops
-- Barrier/conflict introduced
-- Relationship deepens despite obstacles
-- Black moment/breakup
-- Grand gesture/reconciliation
-- Happy ending or HEA (Happily Ever After)
+---
 
-### Fantasy/Sci-Fi
+## 7. 结构选择速查
 
-- Ordinary world establishment
-- Introduction to magical/sci-fi elements
-- Quest or mission defined
-- Journey and world exploration
-- Building towards prophesied/anticipated event
-- Final battle or confrontation
-- New world order established
+- **悬疑/惊悚**：三幕 + 强中点 + 时间压力
+- **奇幻/冒险**：英雄之旅 + 世界规则渐进揭示
+- **都市情感/YA**：Save the Cat + 关系节拍
+- **文学向**：弱外部情节也可，但必须强化角色内在转变路径
+
+---
+
+## 8. 章节规划模板（可复用）
+
+```markdown
+# 章节规划：Chapter <N>
+
+## 本章目标
+
+- 剧情推进：
+- 角色推进：
+- 信息推进：
+
+## 场景拆分
+
+1. 场景A
+   - Goal:
+   - Conflict:
+   - Outcome:
+2. 场景B
+   - Reaction:
+   - Dilemma:
+   - Decision:
+
+## 与全书结构关系
+
+- 对应幕/节拍：
+- 对下一章的钩子：
+
+## 时间线标记
+
+- Timeline:
+- Location:
+- POV:
+```
+
+---
+
+## 9. 结构诊断清单
+
+如果感觉“写不动”或“故事散”：
+
+1. 主角目标是否仍然明确
+2. 冲突是否持续升级
+3. 中点是否真的改变了局势
+4. 每章结尾是否提供了继续阅读动因
+5. 终局是否回应了开篇提出的核心问题
