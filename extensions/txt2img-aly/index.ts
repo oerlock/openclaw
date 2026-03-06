@@ -191,7 +191,7 @@ export function createTxt2ImgAlyTool(options?: {
 
   return {
     name: "txt2img_aly",
-    description: "基于文本生成图片。在各类生成任务中表现优于 txt2img。",
+    description: "基于文本生成图片。",
     parameters: {
       type: "object",
       properties: {
