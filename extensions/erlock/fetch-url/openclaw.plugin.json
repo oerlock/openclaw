@@ -1,0 +1,15 @@
+{
+  "id": "fetch-url",
+  "name": "Fetch URL",
+  "description": "Fetch rendered page snapshots through a browser MCP endpoint.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "mcpUrl": {
+        "type": "string",
+        "description": "Browser MCP streamable HTTP endpoint. Defaults to http://localhost:8931/mcp."
+      }
+    }
+  }
+}
