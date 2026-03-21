@@ -1,5 +1,3 @@
-import type { AnyAgentTool, OpenClawPluginApi } from "../../src/plugins/types.js";
-
 type AlySize = "1664*928" | "1472*1104" | "1328*1328" | "1104*1472" | "928*1664";
 
 type AlyParameters = {
@@ -183,7 +181,7 @@ async function callAly(params: {
 export function createTxt2ImgAlyTool(options?: {
   apiKey?: string;
   baseUrl?: string;
-}): AnyAgentTool {
+}) {
   const apiKey = options?.apiKey ?? "";
   const baseUrl =
     options?.baseUrl ??
@@ -336,7 +334,7 @@ export function createTxt2ImgAlyTool(options?: {
   };
 }
 
-export default function register(api: OpenClawPluginApi) {
+export default function register(api) {
   const cfg = (api.pluginConfig ?? {}) as { apiKey?: string; baseUrl?: string };
 
   api.registerTool(
