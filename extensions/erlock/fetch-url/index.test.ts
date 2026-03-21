@@ -45,7 +45,7 @@ describe("fetch_url", () => {
     expect(connectMock).toHaveBeenCalledOnce();
     expect(callToolMock).toHaveBeenNthCalledWith(1, {
       name: "browser_navigate",
-      arguments: { url: "https://example.com/" },
+      arguments: { url: "https://example.com" },
     });
     expect(callToolMock).toHaveBeenNthCalledWith(2, {
       name: "browser_wait_for",
@@ -55,7 +55,7 @@ describe("fetch_url", () => {
       name: "browser_snapshot",
       arguments: {},
     });
-    expect(result.content[0]?.text).toContain('"title": "Example"');
+    expect(result.content[0]?.text).toContain('"title":"Example"');
   });
 
   it("writes screenshot data when screenshot_path is provided", async () => {
@@ -92,7 +92,7 @@ describe("fetch_url", () => {
     });
 
     expect(result.isError).toBe(true);
-    expect(result.content[0]?.text).toContain("between 0 and 60");
+    expect(result.content[0]?.text).toContain("expected number to be <=60");
     expect(callToolMock).not.toHaveBeenCalled();
   });
 });

@@ -1,121 +1,83 @@
-import { Buffer } from "node:buffer";
 import fs from "node:fs/promises";
+import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { definePluginEntry, type AnyAgentTool } from "openclaw/plugin-sdk/core";
+import { z } from "zod";
 
-type FetchUrlParams = {
-  url: string;
-  wait_for_render?: number;
-  screenshot_path?: string;
-};
+const DEFAULT_MCP_URL = "http://localhost:8931/mcp";
+
+export const FetchUrlArgs = z.object({
+  url: z.url(),
+  wait_for_render: z.number().min(0).max(60).default(8),
+  screenshot_path: z.string().trim().min(1).optional(),
+});
+
+export type FetchUrlArgsType = z.infer<typeof FetchUrlArgs>;
 
 type PluginConfig = {
   mcpUrl?: string;
 };
 
-const DEFAULT_MCP_URL = "http://localhost:8931/mcp";
-const DEFAULT_WAIT_SECONDS = 8;
-const MAX_WAIT_SECONDS = 60;
-
-function fail(message: string): never {
-  throw new Error(message);
+function getScreenshotData(result: CallToolResult): string | undefined {
+  return result.content?.find(
+    (item): item is { data: string } =>
+      Boolean(item) && typeof item === "object" && typeof item.data === "string",
+  )?.data;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function readParams(input: unknown): FetchUrlParams {
-  if (!isRecord(input)) {
-    fail("params required");
-  }
-
-  const { url, wait_for_render, screenshot_path } = input;
-  if (typeof url !== "string" || !url.trim()) {
-    fail("url is required");
-  }
-
-  let parsedUrl: URL;
-  try {
-    parsedUrl = new URL(url);
-  } catch {
-    fail("url must be a valid absolute URL");
-  }
-  if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-    fail("url must use http or https");
-  }
-
-  const waitSeconds =
-    wait_for_render === undefined ? DEFAULT_WAIT_SECONDS : Number(wait_for_render);
-  if (!Number.isFinite(waitSeconds) || waitSeconds < 0 || waitSeconds >= MAX_WAIT_SECONDS + 1) {
-    fail("wait_for_render must be between 0 and 60 seconds");
-  }
-
-  if (screenshot_path !== undefined && typeof screenshot_path !== "string") {
-    fail("screenshot_path must be a string path");
-  }
-  if (typeof screenshot_path === "string" && !screenshot_path.trim()) {
-    fail("screenshot_path must not be empty");
-  }
-
-  return {
-    url: parsedUrl.toString(),
-    wait_for_render: waitSeconds,
-    screenshot_path: screenshot_path?.trim() || undefined,
-  };
-}
-
-function extractImageBase64(result: CallToolResult): string {
-  const blocks = Array.isArray(result.content) ? result.content : [];
-  for (const block of blocks) {
-    if (!isRecord(block)) {
-      continue;
-    }
-    if (typeof block.data === "string" && block.data.trim()) {
-      return block.data;
-    }
-  }
-  fail("browser_take_screenshot did not return image data");
-}
-
-function resultToJson(result: CallToolResult): string {
-  return JSON.stringify(
-    {
-      content: result.content ?? [],
-      structuredContent: result.structuredContent ?? null,
-      isError: result.isError === true,
-    },
-    null,
-    2,
-  );
-}
-
-async function callBrowserTool(
+async function callTool(
   client: Client,
   name: string,
-  args: Record<string, unknown>,
+  arguments_: Record<string, unknown>,
 ): Promise<CallToolResult> {
-  return (await client.callTool({
-    name,
-    arguments: args,
-  })) as CallToolResult;
+  return (await client.callTool({ name, arguments: arguments_ })) as CallToolResult;
+}
+
+/** 使用无头浏览器获取指定 URL 的完整网页内容。 */
+export async function fetchUrl(args: FetchUrlArgsType, options?: PluginConfig): Promise<string> {
+  const transport = new StreamableHTTPClientTransport(new URL(options?.mcpUrl || DEFAULT_MCP_URL));
+  const client = new Client({ name: "openclaw-fetch-url-plugin", version: "0.0.0" }, {});
+
+  try {
+    await client.connect(transport);
+
+    await callTool(client, "browser_navigate", { url: args.url });
+
+    if (args.wait_for_render) {
+      await callTool(client, "browser_wait_for", { time: args.wait_for_render });
+    }
+
+    const snapshot = await callTool(client, "browser_snapshot", {});
+
+    if (args.screenshot_path) {
+      const screenshot = await callTool(client, "browser_take_screenshot", {
+        type: "png",
+        filename: "screenshot.png",
+        fullPage: true,
+      });
+      const data = getScreenshotData(screenshot);
+      if (data) {
+        await fs.writeFile(path.resolve(args.screenshot_path), Buffer.from(data, "base64"));
+      }
+    }
+
+    return JSON.stringify(snapshot);
+  } finally {
+    await client.close().catch(() => {});
+    await transport.close().catch(() => {});
+  }
 }
 
 export function createFetchUrlTool(options?: PluginConfig): AnyAgentTool {
-  const mcpUrl = options?.mcpUrl?.trim() || DEFAULT_MCP_URL;
-
   return {
     name: "fetch_url",
     description: "使用无头浏览器获取指定 URL 的最终渲染网页内容，并可按需保存整页截图。",
     parameters: {
       type: "object",
       properties: {
-        url: {
-          type: "string",
-          description: "要抓取的 HTTP/HTTPS URL。",
-        },
+        url: { type: "string", description: "要抓取的 HTTP/HTTPS URL。" },
         wait_for_render: {
           type: "number",
           description: "等待页面渲染的时间（秒），默认 8，范围 0 到 60。",
@@ -131,75 +93,34 @@ export function createFetchUrlTool(options?: PluginConfig): AnyAgentTool {
       additionalProperties: false,
     },
     async execute(_id, params) {
-      let client: Client | undefined;
-      let transport: StreamableHTTPClientTransport | undefined;
+      const parsed = FetchUrlArgs.safeParse(params);
+      if (!parsed.success) {
+        return {
+          content: [{ type: "text", text: z.prettifyError(parsed.error) }],
+          isError: true,
+        };
+      }
 
       try {
-        const input = readParams(params);
-        transport = new StreamableHTTPClientTransport(new URL(mcpUrl));
-        client = new Client(
-          {
-            name: "openclaw-fetch-url-plugin",
-            version: "0.0.0",
-          },
-          {},
-        );
-        await client.connect(transport);
-
-        await callBrowserTool(client, "browser_navigate", {
-          url: input.url,
-        });
-
-        if ((input.wait_for_render ?? 0) > 0) {
-          await callBrowserTool(client, "browser_wait_for", {
-            time: input.wait_for_render,
-          });
-        }
-
-        const snapshot = await callBrowserTool(client, "browser_snapshot", {});
-
-        if (input.screenshot_path) {
-          const screenshotResult = await callBrowserTool(client, "browser_take_screenshot", {
-            type: "png",
-            filename: "screenshot.png",
-            fullPage: true,
-          });
-          const imageData = extractImageBase64(screenshotResult);
-          await fs.writeFile(input.screenshot_path, Buffer.from(imageData, "base64"));
-        }
-
-        const output = resultToJson(snapshot);
-        const details: Record<string, unknown> = {
-          url: input.url,
-          wait_for_render: input.wait_for_render,
-          mcpUrl,
-        };
-        if (input.screenshot_path) {
-          details.screenshot_path = input.screenshot_path;
-        }
-
         return {
-          content: [
-            {
-              type: "text",
-              text: output,
-            },
-          ],
-          details,
+          content: [{ type: "text", text: await fetchUrl(parsed.data, options) }],
+          details: {
+            url: parsed.data.url,
+            wait_for_render: parsed.data.wait_for_render,
+            screenshot_path: parsed.data.screenshot_path,
+            mcpUrl: options?.mcpUrl?.trim() || DEFAULT_MCP_URL,
+          },
         };
       } catch (error) {
         return {
           content: [
             {
               type: "text",
-              text: error instanceof Error ? error.message : "fetch_url failed",
+              text: error instanceof Error ? error.stack || error.message : String(error),
             },
           ],
           isError: true,
         };
-      } finally {
-        await client?.close().catch(() => {});
-        await transport?.close().catch(() => {});
       }
     },
   };
@@ -210,7 +131,6 @@ export default definePluginEntry({
   name: "Fetch URL Plugin",
   description: "Fetch rendered HTML snapshots through a browser MCP server.",
   register(api) {
-    const cfg = (api.pluginConfig ?? {}) as PluginConfig;
-    api.registerTool(createFetchUrlTool(cfg) as AnyAgentTool);
+    api.registerTool(createFetchUrlTool((api.pluginConfig ?? {}) as PluginConfig) as AnyAgentTool);
   },
 });
