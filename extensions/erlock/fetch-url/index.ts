@@ -3,7 +3,7 @@ import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { definePluginEntry, type AnyAgentTool } from "openclaw/plugin-sdk/core";
+import type { AnyAgentTool, OpenClawPluginApi } from "openclaw/plugin-sdk/core";
 import { z } from "zod";
 
 const DEFAULT_MCP_URL = "http://localhost:8931/mcp";
@@ -126,11 +126,6 @@ export function createFetchUrlTool(options?: PluginConfig): AnyAgentTool {
   };
 }
 
-export default definePluginEntry({
-  id: "fetch-url",
-  name: "Fetch URL Plugin",
-  description: "Fetch rendered HTML snapshots through a browser MCP server.",
-  register(api) {
-    api.registerTool(createFetchUrlTool((api.pluginConfig ?? {}) as PluginConfig) as AnyAgentTool);
-  },
-});
+export default function register(api: OpenClawPluginApi) {
+  api.registerTool(createFetchUrlTool((api.pluginConfig ?? {}) as PluginConfig) as AnyAgentTool);
+}
