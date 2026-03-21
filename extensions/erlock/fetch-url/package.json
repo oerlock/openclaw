@@ -1,0 +1,22 @@
+{
+  "name": "@openclaw/fetch-url",
+  "version": "2026.3.21",
+  "description": "Browser MCP fetch_url plugin for OpenClaw",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.27.1"
+  },
+  "devDependencies": {
+    "openclaw": "file:../../.."
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "install": {
+      "npmSpec": "@openclaw/fetch-url",
+      "localPath": "extensions/erlock/fetch-url",
+      "defaultChoice": "local"
+    }
+  }
+}
