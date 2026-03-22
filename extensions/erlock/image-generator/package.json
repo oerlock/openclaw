@@ -3,9 +3,6 @@
   "version": "2026.3.22",
   "description": "DashScope Qwen image generator plugin for OpenClaw",
   "type": "module",
-  "devDependencies": {
-    "openclaw": "file:../../.."
-  },
   "openclaw": {
     "extensions": [
       "./index.ts"

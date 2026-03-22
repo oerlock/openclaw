@@ -4,11 +4,11 @@ OpenClaw plugin that provides an `image_generator` tool for DashScope Qwen image
 
 ## Config
 
-Set `pluginConfig.apiKey` to your DashScope API key.
+You must set `apiKey` in plugin config (`api.pluginConfig`).
 
 Optional:
 
-- `pluginConfig.baseUrl`: override the default DashScope endpoint
+- `baseUrl`: override the default DashScope endpoint
 
 ## Tool contract
 

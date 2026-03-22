@@ -8,13 +8,12 @@
     "properties": {
       "apiKey": {
         "type": "string",
-        "description": "DashScope API key used for Authorization Bearer authentication."
+        "description": "DashScope API key from pluginConfig.apiKey."
       },
       "baseUrl": {
         "type": "string",
-        "description": "Optional API endpoint override; defaults to the built-in DashScope multimodal generation endpoint."
+        "description": "Override API endpoint from pluginConfig.baseUrl; defaults to the built-in DashScope multimodal generation endpoint."
       }
-    },
-    "required": ["apiKey"]
+    }
   }
 }
