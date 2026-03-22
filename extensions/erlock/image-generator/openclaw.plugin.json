@@ -1,0 +1,20 @@
+{
+  "id": "image-generator",
+  "name": "Image Generator",
+  "description": "DashScope Qwen image generation and editing plugin.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "DashScope API key used for Authorization Bearer authentication."
+      },
+      "baseUrl": {
+        "type": "string",
+        "description": "Optional API endpoint override; defaults to the built-in DashScope multimodal generation endpoint."
+      }
+    },
+    "required": ["apiKey"]
+  }
+}
