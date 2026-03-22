@@ -1,0 +1,16 @@
+{
+  "name": "@openclaw/image-generator",
+  "version": "2026.3.22",
+  "description": "DashScope Qwen image generator plugin for OpenClaw",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "install": {
+      "npmSpec": "@openclaw/image-generator",
+      "localPath": "extensions/erlock/image-generator",
+      "defaultChoice": "local"
+    }
+  }
+}
