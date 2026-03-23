@@ -7,10 +7,6 @@ import {
   DefaultResourceLoader,
   SessionManager,
 } from "@mariozechner/pi-coding-agent";
-import {
-  resolveTelegramInlineButtonsScope,
-  resolveTelegramReactionLevel,
-} from "../../../../extensions/telegram/api.js";
 import { resolveHeartbeatPrompt } from "../../../auto-reply/heartbeat.js";
 import { resolveChannelCapabilities } from "../../../config/channel-capabilities.js";
 import type { OpenClawConfig } from "../../../config/config.js";
@@ -21,6 +17,10 @@ import {
 } from "../../../infra/net/undici-global-dispatcher.js";
 import { MAX_IMAGE_BYTES } from "../../../media/constants.js";
 import { resolveSignalReactionLevel } from "../../../plugin-sdk/signal.js";
+import {
+  resolveTelegramInlineButtonsScope,
+  resolveTelegramReactionLevel,
+} from "../../../plugin-sdk/telegram.js";
 import { getGlobalHookRunner } from "../../../plugins/hook-runner-global.js";
 import type {
   PluginHookAgentContext,
@@ -164,10 +164,44 @@ type PromptBuildHookRunner = {
 
 const SESSIONS_YIELD_INTERRUPT_CUSTOM_TYPE = "openclaw.sessions_yield_interrupt";
 const SESSIONS_YIELD_CONTEXT_CUSTOM_TYPE = "openclaw.sessions_yield";
+const SESSIONS_YIELD_ABORT_SETTLE_TIMEOUT_MS = process.env.OPENCLAW_TEST_FAST === "1" ? 250 : 2_000;
 
 // Persist a hidden context reminder so the next turn knows why the runner stopped.
-function buildSessionsYieldContextMessage(message: string): string {
+export function buildSessionsYieldContextMessage(message: string): string {
   return `${message}\n\n[Context: The previous turn ended intentionally via sessions_yield while waiting for a follow-up event.]`;
+}
+
+async function waitForSessionsYieldAbortSettle(params: {
+  settlePromise: Promise<void> | null;
+  runId: string;
+  sessionId: string;
+}): Promise<void> {
+  if (!params.settlePromise) {
+    return;
+  }
+
+  let timeout: NodeJS.Timeout | undefined;
+  const outcome = await Promise.race([
+    params.settlePromise
+      .then(() => "settled" as const)
+      .catch((err) => {
+        log.warn(
+          `sessions_yield abort settle failed: runId=${params.runId} sessionId=${params.sessionId} err=${String(err)}`,
+        );
+        return "errored" as const;
+      }),
+    new Promise<"timed_out">((resolve) => {
+      timeout = setTimeout(() => resolve("timed_out"), SESSIONS_YIELD_ABORT_SETTLE_TIMEOUT_MS);
+    }),
+  ]);
+  if (timeout) {
+    clearTimeout(timeout);
+  }
+  if (outcome === "timed_out") {
+    log.warn(
+      `sessions_yield abort settle timed out: runId=${params.runId} sessionId=${params.sessionId} timeoutMs=${SESSIONS_YIELD_ABORT_SETTLE_TIMEOUT_MS}`,
+    );
+  }
 }
 
 // Return a synthetic aborted response so pi-agent-core unwinds without a real provider call.
@@ -226,8 +260,9 @@ function createYieldAbortedResponse(model: { api?: string; provider?: string; id
   };
 }
 
-// Queue a hidden steering message so pi-agent-core skips any remaining tool calls.
-function queueSessionsYieldInterruptMessage(activeSession: {
+// Queue a hidden steering message so pi-agent-core injects it before the next
+// LLM call once the current assistant turn finishes executing its tool calls.
+export function queueSessionsYieldInterruptMessage(activeSession: {
   agent: { steer: (message: AgentMessage) => void };
 }) {
   activeSession.agent.steer({
@@ -241,7 +276,7 @@ function queueSessionsYieldInterruptMessage(activeSession: {
 }
 
 // Append the caller-provided yield payload as a hidden session message once the run is idle.
-async function persistSessionsYieldContextMessage(
+export async function persistSessionsYieldContextMessage(
   activeSession: {
     sendCustomMessage: (
       message: {
@@ -267,7 +302,7 @@ async function persistSessionsYieldContextMessage(
 }
 
 // Remove the synthetic yield interrupt + aborted assistant entry from the live transcript.
-function stripSessionsYieldArtifacts(activeSession: {
+export function stripSessionsYieldArtifacts(activeSession: {
   messages: AgentMessage[];
   agent: { replaceMessages: (messages: AgentMessage[]) => void };
   sessionManager?: unknown;
@@ -1628,7 +1663,6 @@ export async function runEmbeddedAttempt(
   params: EmbeddedRunAttemptParams,
 ): Promise<EmbeddedRunAttemptResult> {
   const resolvedWorkspace = resolveUserPath(params.workspaceDir);
-  const prevCwd = process.cwd();
   const runAbortController = new AbortController();
   // Proxy bootstrap must happen before timeout tuning so the timeouts wrap the
   // active EnvHttpProxyAgent instead of being replaced by a bare proxy dispatcher.
@@ -1655,7 +1689,6 @@ export async function runEmbeddedAttempt(
   await fs.mkdir(effectiveWorkspace, { recursive: true });
 
   let restoreSkillEnv: (() => void) | undefined;
-  process.chdir(effectiveWorkspace);
   try {
     const { shouldLoadSkillEntries, skillEntries } = resolveEmbeddedRunSkillEntries({
       workspaceDir: effectiveWorkspace,
@@ -1910,7 +1943,7 @@ export async function runEmbeddedAttempt(
       config: params.config,
       agentId: sessionAgentId,
       workspaceDir: effectiveWorkspace,
-      cwd: process.cwd(),
+      cwd: effectiveWorkspace,
       runtime: {
         host: machineName,
         os: `${os.type()} ${os.release()}`,
@@ -1929,7 +1962,7 @@ export async function runEmbeddedAttempt(
     const docsPath = await resolveOpenClawDocsPath({
       workspaceDir: effectiveWorkspace,
       argv1: process.argv[1],
-      cwd: process.cwd(),
+      cwd: effectiveWorkspace,
       moduleUrl: import.meta.url,
     });
     const ttsHint = params.config ? buildTtsSystemPromptHint(params.config) : undefined;
@@ -2853,11 +2886,13 @@ export async function runEmbeddedAttempt(
             err.cause === "sessions_yield";
           if (yieldAborted) {
             aborted = false;
-            // Ensure the session abort has fully settled before proceeding.
-            if (yieldAbortSettled) {
-              // eslint-disable-next-line @typescript-eslint/await-thenable -- abort() returns Promise<void> per AgentSession.d.ts
-              await yieldAbortSettled;
-            }
+            // Ensure the session abort has mostly settled before proceeding, but
+            // don't deadlock the whole run if the underlying session abort hangs.
+            await waitForSessionsYieldAbortSettle({
+              settlePromise: yieldAbortSettled,
+              runId: params.runId,
+              sessionId: params.sessionId,
+            });
             stripSessionsYieldArtifacts(activeSession);
             if (yieldMessage) {
               await persistSessionsYieldContextMessage(activeSession, yieldMessage);
@@ -3207,6 +3242,5 @@ export async function runEmbeddedAttempt(
     }
   } finally {
     restoreSkillEnv?.();
-    process.chdir(prevCwd);
   }
 }

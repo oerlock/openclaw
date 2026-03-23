@@ -7,10 +7,6 @@ import {
   estimateTokens,
   SessionManager,
 } from "@mariozechner/pi-coding-agent";
-import {
-  resolveTelegramInlineButtonsScope,
-  resolveTelegramReactionLevel,
-} from "../../../extensions/telegram/api.js";
 import { resolveHeartbeatPrompt } from "../../auto-reply/heartbeat.js";
 import type { ReasoningLevel, ThinkLevel } from "../../auto-reply/thinking.js";
 import { resolveChannelCapabilities } from "../../config/channel-capabilities.js";
@@ -24,6 +20,10 @@ import { getMachineDisplayName } from "../../infra/machine-name.js";
 import { generateSecureToken } from "../../infra/secure-random.js";
 import { getMemorySearchManager } from "../../memory/index.js";
 import { resolveSignalReactionLevel } from "../../plugin-sdk/signal.js";
+import {
+  resolveTelegramInlineButtonsScope,
+  resolveTelegramReactionLevel,
+} from "../../plugin-sdk/telegram.js";
 import { getGlobalHookRunner } from "../../plugins/hook-runner-global.js";
 import { prepareProviderRuntimeAuth } from "../../plugins/provider-runtime.js";
 import { type enqueueCommand, enqueueCommandInLane } from "../../process/command-queue.js";
@@ -38,6 +38,10 @@ import { resolveSessionAgentId, resolveSessionAgentIds } from "../agent-scope.js
 import type { ExecElevatedDefaults } from "../bash-tools.js";
 import { makeBootstrapWarn, resolveBootstrapContextForRun } from "../bootstrap-files.js";
 import { listChannelSupportedActions, resolveChannelMessageToolHints } from "../channel-tools.js";
+import {
+  hasMeaningfulConversationContent,
+  isRealConversationMessage,
+} from "../compaction-real-conversation.js";
 import { resolveContextWindowInfo } from "../context-window-guard.js";
 import { ensureCustomApiRegistered } from "../custom-api-registry.js";
 import { formatUserTime, resolveUserTimeFormat, resolveUserTimezone } from "../date-time.js";
@@ -169,8 +173,12 @@ type CompactionMessageMetrics = {
   contributors: Array<{ role: string; chars: number; tool?: string }>;
 };
 
-function hasRealConversationContent(msg: AgentMessage): boolean {
-  return msg.role === "user" || msg.role === "assistant" || msg.role === "toolResult";
+function hasRealConversationContent(
+  msg: AgentMessage,
+  messages: AgentMessage[],
+  index: number,
+): boolean {
+  return isRealConversationMessage(msg, messages, index);
 }
 
 function createCompactionDiagId(): string {
@@ -398,8 +406,6 @@ export async function compactEmbeddedPiSessionDirect(
     workspaceDir: resolvedWorkspace,
     allowGatewaySubagentBinding: params.allowGatewaySubagentBinding,
   });
-  const prevCwd = process.cwd();
-
   // Resolve compaction model: prefer config override, then fall back to caller-supplied model
   const compactionModelOverride = params.config?.agents?.defaults?.compaction?.model?.trim();
   let provider: string;
@@ -519,7 +525,6 @@ export async function compactEmbeddedPiSessionDirect(
   });
 
   let restoreSkillEnv: (() => void) | undefined;
-  process.chdir(effectiveWorkspace);
   try {
     const { shouldLoadSkillEntries, skillEntries } = resolveEmbeddedRunSkillEntries({
       workspaceDir: effectiveWorkspace,
@@ -723,7 +728,7 @@ export async function compactEmbeddedPiSessionDirect(
     const docsPath = await resolveOpenClawDocsPath({
       workspaceDir: effectiveWorkspace,
       argv1: process.argv[1],
-      cwd: process.cwd(),
+      cwd: effectiveWorkspace,
       moduleUrl: import.meta.url,
     });
     const ttsHint = params.config ? buildTtsSystemPromptHint(params.config) : undefined;
@@ -962,7 +967,11 @@ export async function compactEmbeddedPiSessionDirect(
           );
         }
 
-        if (!session.messages.some(hasRealConversationContent)) {
+        if (
+          !session.messages.some((message, index, messages) =>
+            hasRealConversationContent(message, messages, index),
+          )
+        ) {
           log.info(
             `[compaction] skipping — no real conversation messages (sessionKey=${params.sessionKey ?? params.sessionId})`,
           );
@@ -1135,7 +1144,6 @@ export async function compactEmbeddedPiSessionDirect(
     return fail(reason);
   } finally {
     restoreSkillEnv?.();
-    process.chdir(prevCwd);
   }
 }
 
@@ -1281,3 +1289,8 @@ export async function compactEmbeddedPiSession(
     }),
   );
 }
+
+export const __testing = {
+  hasRealConversationContent,
+  hasMeaningfulConversationContent,
+} as const;
