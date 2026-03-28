@@ -1,0 +1,23 @@
+{
+  "id": "reference-video-generator",
+  "name": "Reference Video Generator",
+  "description": "DashScope Wan reference-to-video generation plugin.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "DashScope API key from pluginConfig.apiKey. Optional at install time; required before tool calls."
+      },
+      "createTaskUrl": {
+        "type": "string",
+        "description": "Optional override for async task creation URL from pluginConfig.createTaskUrl; defaults to the DashScope video synthesis endpoint."
+      },
+      "taskResultBaseUrl": {
+        "type": "string",
+        "description": "Optional override for task result base URL from pluginConfig.taskResultBaseUrl; defaults to https://dashscope.aliyuncs.com/api/v1/tasks."
+      }
+    }
+  }
+}
