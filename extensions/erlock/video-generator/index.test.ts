@@ -110,6 +110,6 @@ describe("video_generator", () => {
     });
 
     expect(result.isError).toBe(true);
-    expect(result.content[0]?.text).toContain("pluginConfig.apiKey is required");
+    expect(result.content[0]?.text).toContain("pluginConfig.apiKey is not set");
   });
 });

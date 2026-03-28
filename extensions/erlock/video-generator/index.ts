@@ -268,7 +268,9 @@ function parseGetResultArgs(raw: unknown): GetVideoGenResultArgs {
 function readApiKey(options?: PluginConfig): string {
   const apiKey = options?.apiKey?.trim();
   if (!apiKey) {
-    fail("pluginConfig.apiKey is required");
+    fail(
+      "pluginConfig.apiKey is not set; install-time can leave it empty, but set it before calling this tool",
+    );
   }
   return apiKey;
 }

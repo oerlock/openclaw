@@ -7,7 +7,8 @@ OpenClaw plugin that provides two DashScope Wan video tools:
 
 ## Config
 
-You must set `apiKey` in plugin config (`api.pluginConfig`).
+`apiKey`, `createTaskUrl`, and `taskResultBaseUrl` can be left unset right after install.
+Set `apiKey` before actually calling the tools.
 
 Optional:
 
