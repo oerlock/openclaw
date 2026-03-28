@@ -16,11 +16,70 @@ vi.mock("./manifest.js", () => ({
   loadPluginManifest: (...args: unknown[]) => loadPluginManifestMock(...args),
 }));
 
+function createBundledCandidate(params: {
+  rootDir: string;
+  packageName: string;
+  npmSpec?: string;
+  origin?: "bundled" | "global";
+}) {
+  return {
+    origin: params.origin ?? "bundled",
+    rootDir: params.rootDir,
+    packageName: params.packageName,
+    packageManifest: {
+      install: {
+        npmSpec: params.npmSpec ?? params.packageName,
+      },
+    },
+  };
+}
+
 function setBundledDiscoveryCandidates(candidates: unknown[]) {
   discoverOpenClawPluginsMock.mockReturnValue({
     candidates,
     diagnostics: [],
   });
+}
+
+function setBundledManifestIdsByRoot(manifestIds: Record<string, string>) {
+  loadPluginManifestMock.mockImplementation((rootDir: string) =>
+    rootDir in manifestIds
+      ? { ok: true, manifest: { id: manifestIds[rootDir] } }
+      : {
+          ok: false,
+          error: "invalid manifest",
+          manifestPath: `${rootDir}/openclaw.plugin.json`,
+        },
+  );
+}
+
+function setBundledLookupFixture() {
+  setBundledDiscoveryCandidates([
+    createBundledCandidate({
+      rootDir: "/app/extensions/feishu",
+      packageName: "@openclaw/feishu",
+    }),
+    createBundledCandidate({
+      rootDir: "/app/extensions/diffs",
+      packageName: "@openclaw/diffs",
+    }),
+  ]);
+  setBundledManifestIdsByRoot({
+    "/app/extensions/feishu": "feishu",
+    "/app/extensions/diffs": "diffs",
+  });
+}
+
+function createResolvedBundledSource(params: {
+  pluginId: string;
+  localPath: string;
+  npmSpec?: string;
+}) {
+  return {
+    pluginId: params.pluginId,
+    localPath: params.localPath,
+    npmSpec: params.npmSpec ?? `@openclaw/${params.pluginId}`,
+  };
 }
 
 function expectBundledSourceLookup(
@@ -41,6 +100,19 @@ function expectBundledSourceLookup(
   expect(resolved?.localPath).toBe(expected.localPath);
 }
 
+function expectBundledSourceLookupCase(params: {
+  lookup: Parameters<typeof findBundledPluginSource>[0]["lookup"];
+  expected:
+    | {
+        pluginId: string;
+        localPath: string;
+      }
+    | undefined;
+}) {
+  setBundledLookupFixture();
+  expectBundledSourceLookup(params.lookup, params.expected);
+}
+
 describe("bundled plugin sources", () => {
   beforeEach(() => {
     discoverOpenClawPluginsMock.mockReset();
@@ -48,58 +120,39 @@ describe("bundled plugin sources", () => {
   });
 
   it("resolves bundled sources keyed by plugin id", () => {
-    discoverOpenClawPluginsMock.mockReturnValue({
-      candidates: [
-        {
-          origin: "global",
-          rootDir: "/global/feishu",
-          packageName: "@openclaw/feishu",
-          packageManifest: { install: { npmSpec: "@openclaw/feishu" } },
-        },
-        {
-          origin: "bundled",
-          rootDir: "/app/extensions/feishu",
-          packageName: "@openclaw/feishu",
-          packageManifest: { install: { npmSpec: "@openclaw/feishu" } },
-        },
-        {
-          origin: "bundled",
-          rootDir: "/app/extensions/feishu-dup",
-          packageName: "@openclaw/feishu",
-          packageManifest: { install: { npmSpec: "@openclaw/feishu" } },
-        },
-        {
-          origin: "bundled",
-          rootDir: "/app/extensions/msteams",
-          packageName: "@openclaw/msteams",
-          packageManifest: { install: { npmSpec: "@openclaw/msteams" } },
-        },
-      ],
-      diagnostics: [],
-    });
-
-    loadPluginManifestMock.mockImplementation((rootDir: string) => {
-      if (rootDir === "/app/extensions/feishu") {
-        return { ok: true, manifest: { id: "feishu" } };
-      }
-      if (rootDir === "/app/extensions/msteams") {
-        return { ok: true, manifest: { id: "msteams" } };
-      }
-      return {
-        ok: false,
-        error: "invalid manifest",
-        manifestPath: `${rootDir}/openclaw.plugin.json`,
-      };
+    setBundledDiscoveryCandidates([
+      createBundledCandidate({
+        origin: "global",
+        rootDir: "/global/feishu",
+        packageName: "@openclaw/feishu",
+      }),
+      createBundledCandidate({
+        rootDir: "/app/extensions/feishu",
+        packageName: "@openclaw/feishu",
+      }),
+      createBundledCandidate({
+        rootDir: "/app/extensions/feishu-dup",
+        packageName: "@openclaw/feishu",
+      }),
+      createBundledCandidate({
+        rootDir: "/app/extensions/msteams",
+        packageName: "@openclaw/msteams",
+      }),
+    ]);
+    setBundledManifestIdsByRoot({
+      "/app/extensions/feishu": "feishu",
+      "/app/extensions/msteams": "msteams",
     });
 
     const map = resolveBundledPluginSources({});
 
     expect(Array.from(map.keys())).toEqual(["feishu", "msteams"]);
-    expect(map.get("feishu")).toEqual({
-      pluginId: "feishu",
-      localPath: "/app/extensions/feishu",
-      npmSpec: "@openclaw/feishu",
-    });
+    expect(map.get("feishu")).toEqual(
+      createResolvedBundledSource({
+        pluginId: "feishu",
+        localPath: "/app/extensions/feishu",
+      }),
+    );
   });
 
   it.each([
@@ -124,35 +177,11 @@ describe("bundled plugin sources", () => {
       undefined,
     ],
   ] as const)("%s", (_name, lookup, expected) => {
-    setBundledDiscoveryCandidates([
-      {
-        origin: "bundled",
-        rootDir: "/app/extensions/feishu",
-        packageName: "@openclaw/feishu",
-        packageManifest: { install: { npmSpec: "@openclaw/feishu" } },
-      },
-      {
-        origin: "bundled",
-        rootDir: "/app/extensions/diffs",
-        packageName: "@openclaw/diffs",
-        packageManifest: { install: { npmSpec: "@openclaw/diffs" } },
-      },
-    ]);
-    loadPluginManifestMock.mockReturnValue({ ok: true, manifest: { id: "feishu" } });
-    loadPluginManifestMock.mockImplementation((rootDir: string) => ({
-      ok: true,
-      manifest: {
-        id: rootDir === "/app/extensions/diffs" ? "diffs" : "feishu",
-      },
-    }));
-    expectBundledSourceLookup(lookup, expected);
+    expectBundledSourceLookupCase({ lookup, expected });
   });
 
   it("forwards an explicit env to bundled discovery helpers", () => {
-    discoverOpenClawPluginsMock.mockReturnValue({
-      candidates: [],
-      diagnostics: [],
-    });
+    setBundledDiscoveryCandidates([]);
 
     const env = { HOME: "/tmp/openclaw-home" } as NodeJS.ProcessEnv;
 
@@ -180,11 +209,10 @@ describe("bundled plugin sources", () => {
     const bundled = new Map([
       [
         "feishu",
-        {
+        createResolvedBundledSource({
           pluginId: "feishu",
           localPath: "/app/extensions/feishu",
-          npmSpec: "@openclaw/feishu",
-        },
+        }),
       ],
     ]);
 
@@ -193,11 +221,12 @@ describe("bundled plugin sources", () => {
         bundled,
         lookup: { kind: "pluginId", value: "feishu" },
       }),
-    ).toEqual({
-      pluginId: "feishu",
-      localPath: "/app/extensions/feishu",
-      npmSpec: "@openclaw/feishu",
-    });
+    ).toEqual(
+      createResolvedBundledSource({
+        pluginId: "feishu",
+        localPath: "/app/extensions/feishu",
+      }),
+    );
     expect(
       findBundledPluginSourceInMap({
         bundled,
