@@ -1,6 +1,6 @@
 {
-  "id": "wan-r2v-generator",
-  "name": "Wan R2V Generator",
+  "id": "reference-video-generator",
+  "name": "Reference Video Generator",
   "description": "DashScope Wan reference-to-video generation plugin.",
   "configSchema": {
     "type": "object",

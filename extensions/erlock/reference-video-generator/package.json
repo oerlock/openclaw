@@ -1,0 +1,16 @@
+{
+  "name": "@openclaw/reference-video-generator",
+  "version": "2026.3.28",
+  "description": "DashScope Wan reference video generator plugin for OpenClaw",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "install": {
+      "npmSpec": "@openclaw/reference-video-generator",
+      "localPath": "extensions/erlock/reference-video-generator",
+      "defaultChoice": "local"
+    }
+  }
+}

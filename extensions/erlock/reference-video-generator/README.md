@@ -1,4 +1,4 @@
-# Wan R2V Generator
+# Reference Video Generator
 
 OpenClaw plugin for DashScope Wan reference-to-video generation.
 
@@ -36,5 +36,5 @@ Optional:
 ## Development
 
 ```bash
-pnpm test -- extensions/erlock/wan-r2v-generator/index.test.ts
+pnpm test -- extensions/erlock/reference-video-generator/index.test.ts
 ```
