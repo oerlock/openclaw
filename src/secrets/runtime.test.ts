@@ -1,16 +1,10 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AuthProfileStore } from "../agents/auth-profiles.js";
-import { clearConfigCache, type OpenClawConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/config.js";
 import type { PluginWebSearchProviderEntry } from "../plugins/types.js";
-import {
-  activateSecretsRuntimeSnapshot,
-  clearSecretsRuntimeSnapshot,
-  getActiveRuntimeWebToolsMetadata,
-  prepareSecretsRuntimeSnapshot,
-} from "./runtime.js";
 
 type WebProviderUnderTest = "brave" | "gemini" | "grok" | "kimi" | "perplexity" | "firecrawl";
 
@@ -103,6 +97,12 @@ function buildTestWebSearchProviders(): PluginWebSearchProviderEntry[] {
 
 const OPENAI_ENV_KEY_REF = { source: "env", provider: "default", id: "OPENAI_API_KEY" } as const;
 
+let clearConfigCache: typeof import("../config/config.js").clearConfigCache;
+let activateSecretsRuntimeSnapshot: typeof import("./runtime.js").activateSecretsRuntimeSnapshot;
+let clearSecretsRuntimeSnapshot: typeof import("./runtime.js").clearSecretsRuntimeSnapshot;
+let getActiveRuntimeWebToolsMetadata: typeof import("./runtime.js").getActiveRuntimeWebToolsMetadata;
+let prepareSecretsRuntimeSnapshot: typeof import("./runtime.js").prepareSecretsRuntimeSnapshot;
+
 function createOpenAiFileModelsConfig(): NonNullable<OpenClawConfig["models"]> {
   return {
     providers: {
@@ -123,6 +123,17 @@ function loadAuthStoreWithProfiles(profiles: AuthProfileStore["profiles"]): Auth
 }
 
 describe("secrets runtime snapshot", () => {
+  beforeAll(async () => {
+    vi.resetModules();
+    ({ clearConfigCache } = await import("../config/config.js"));
+    ({
+      activateSecretsRuntimeSnapshot,
+      clearSecretsRuntimeSnapshot,
+      getActiveRuntimeWebToolsMetadata,
+      prepareSecretsRuntimeSnapshot,
+    } = await import("./runtime.js"));
+  });
+
   beforeEach(() => {
     resolveBundledPluginWebSearchProvidersMock.mockReset();
     resolveBundledPluginWebSearchProvidersMock.mockReturnValue(buildTestWebSearchProviders());
@@ -1938,20 +1949,22 @@ describe("secrets runtime snapshot", () => {
       loadAuthStore: () => ({ version: 1, profiles: {} }),
     });
 
-    expect(snapshot.config.channels?.discord?.voice?.tts?.openai?.apiKey).toEqual({
+    expect(snapshot.config.channels?.discord?.voice?.tts?.providers?.openai?.apiKey).toEqual({
       source: "env",
       provider: "default",
       id: "MISSING_DISCORD_VOICE_TTS_OPENAI",
     });
-    expect(snapshot.config.channels?.discord?.accounts?.work?.voice?.tts?.openai?.apiKey).toEqual({
+    expect(
+      snapshot.config.channels?.discord?.accounts?.work?.voice?.tts?.providers?.openai?.apiKey,
+    ).toEqual({
       source: "env",
       provider: "default",
       id: "MISSING_DISCORD_WORK_VOICE_TTS_OPENAI",
     });
     expect(snapshot.warnings.map((warning) => warning.path)).toEqual(
       expect.arrayContaining([
-        "channels.discord.voice.tts.openai.apiKey",
-        "channels.discord.accounts.work.voice.tts.openai.apiKey",
+        "channels.discord.voice.tts.providers.openai.apiKey",
+        "channels.discord.accounts.work.voice.tts.providers.openai.apiKey",
       ]),
     );
   });
@@ -1963,8 +1976,10 @@ describe("secrets runtime snapshot", () => {
           discord: {
             voice: {
               tts: {
-                openai: {
-                  apiKey: { source: "env", provider: "default", id: "DISCORD_BASE_TTS_OPENAI" },
+                providers: {
+                  openai: {
+                    apiKey: { source: "env", provider: "default", id: "DISCORD_BASE_TTS_OPENAI" },
+                  },
                 },
               },
             },
@@ -1979,11 +1994,13 @@ describe("secrets runtime snapshot", () => {
                 enabled: true,
                 voice: {
                   tts: {
-                    openai: {
-                      apiKey: {
-                        source: "env",
-                        provider: "default",
-                        id: "DISCORD_ENABLED_OVERRIDE_TTS_OPENAI",
+                    providers: {
+                      openai: {
+                        apiKey: {
+                          source: "env",
+                          provider: "default",
+                          id: "DISCORD_ENABLED_OVERRIDE_TTS_OPENAI",
+                        },
                       },
                     },
                   },
@@ -1993,11 +2010,13 @@ describe("secrets runtime snapshot", () => {
                 enabled: false,
                 voice: {
                   tts: {
-                    openai: {
-                      apiKey: {
-                        source: "env",
-                        provider: "default",
-                        id: "DISCORD_DISABLED_OVERRIDE_TTS_OPENAI",
+                    providers: {
+                      openai: {
+                        apiKey: {
+                          source: "env",
+                          provider: "default",
+                          id: "DISCORD_DISABLED_OVERRIDE_TTS_OPENAI",
+                        },
                       },
                     },
                   },
@@ -2023,13 +2042,17 @@ describe("secrets runtime snapshot", () => {
       loadAuthStore: () => ({ version: 1, profiles: {} }),
     });
 
-    expect(snapshot.config.channels?.discord?.voice?.tts?.openai?.apiKey).toBe("base-tts-openai");
+    expect(snapshot.config.channels?.discord?.voice?.tts?.providers?.openai?.apiKey).toBe(
+      "base-tts-openai",
+    );
     expect(snapshot.config.channels?.discord?.pluralkit?.token).toBe("base-pk-token");
     expect(
-      snapshot.config.channels?.discord?.accounts?.enabledOverride?.voice?.tts?.openai?.apiKey,
+      snapshot.config.channels?.discord?.accounts?.enabledOverride?.voice?.tts?.providers?.openai
+        ?.apiKey,
     ).toBe("enabled-override-tts-openai");
     expect(
-      snapshot.config.channels?.discord?.accounts?.disabledOverride?.voice?.tts?.openai?.apiKey,
+      snapshot.config.channels?.discord?.accounts?.disabledOverride?.voice?.tts?.providers?.openai
+        ?.apiKey,
     ).toEqual({
       source: "env",
       provider: "default",
@@ -2044,7 +2067,7 @@ describe("secrets runtime snapshot", () => {
     );
     expect(snapshot.warnings.map((warning) => warning.path)).toEqual(
       expect.arrayContaining([
-        "channels.discord.accounts.disabledOverride.voice.tts.openai.apiKey",
+        "channels.discord.accounts.disabledOverride.voice.tts.providers.openai.apiKey",
         "channels.discord.accounts.disabledOverride.pluralkit.token",
       ]),
     );
@@ -2057,11 +2080,13 @@ describe("secrets runtime snapshot", () => {
           discord: {
             voice: {
               tts: {
-                openai: {
-                  apiKey: {
-                    source: "env",
-                    provider: "default",
-                    id: "DISCORD_UNUSED_BASE_TTS_OPENAI",
+                providers: {
+                  openai: {
+                    apiKey: {
+                      source: "env",
+                      provider: "default",
+                      id: "DISCORD_UNUSED_BASE_TTS_OPENAI",
+                    },
                   },
                 },
               },
@@ -2071,11 +2096,13 @@ describe("secrets runtime snapshot", () => {
                 enabled: true,
                 voice: {
                   tts: {
-                    openai: {
-                      apiKey: {
-                        source: "env",
-                        provider: "default",
-                        id: "DISCORD_ENABLED_ONLY_TTS_OPENAI",
+                    providers: {
+                      openai: {
+                        apiKey: {
+                          source: "env",
+                          provider: "default",
+                          id: "DISCORD_ENABLED_ONLY_TTS_OPENAI",
+                        },
                       },
                     },
                   },
@@ -2096,15 +2123,16 @@ describe("secrets runtime snapshot", () => {
     });
 
     expect(
-      snapshot.config.channels?.discord?.accounts?.enabledOverride?.voice?.tts?.openai?.apiKey,
+      snapshot.config.channels?.discord?.accounts?.enabledOverride?.voice?.tts?.providers?.openai
+        ?.apiKey,
     ).toBe("enabled-only-tts-openai");
-    expect(snapshot.config.channels?.discord?.voice?.tts?.openai?.apiKey).toEqual({
+    expect(snapshot.config.channels?.discord?.voice?.tts?.providers?.openai?.apiKey).toEqual({
       source: "env",
       provider: "default",
       id: "DISCORD_UNUSED_BASE_TTS_OPENAI",
     });
     expect(snapshot.warnings.map((warning) => warning.path)).toContain(
-      "channels.discord.voice.tts.openai.apiKey",
+      "channels.discord.voice.tts.providers.openai.apiKey",
     );
   });
 
@@ -2116,8 +2144,10 @@ describe("secrets runtime snapshot", () => {
             discord: {
               voice: {
                 tts: {
-                  openai: {
-                    apiKey: { source: "env", provider: "default", id: "DISCORD_BASE_TTS_OK" },
+                  providers: {
+                    openai: {
+                      apiKey: { source: "env", provider: "default", id: "DISCORD_BASE_TTS_OK" },
+                    },
                   },
                 },
               },
@@ -2126,11 +2156,13 @@ describe("secrets runtime snapshot", () => {
                   enabled: true,
                   voice: {
                     tts: {
-                      openai: {
-                        apiKey: {
-                          source: "env",
-                          provider: "default",
-                          id: "DISCORD_ENABLED_OVERRIDE_TTS_MISSING",
+                      providers: {
+                        openai: {
+                          apiKey: {
+                            source: "env",
+                            provider: "default",
+                            id: "DISCORD_ENABLED_OVERRIDE_TTS_MISSING",
+                          },
                         },
                       },
                     },
