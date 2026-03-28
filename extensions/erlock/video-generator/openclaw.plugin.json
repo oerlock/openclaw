@@ -1,0 +1,23 @@
+{
+  "id": "video-generator",
+  "name": "Video Generator",
+  "description": "DashScope Wan video generation plugin.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "DashScope API key from pluginConfig.apiKey."
+      },
+      "createTaskUrl": {
+        "type": "string",
+        "description": "Override async task creation URL from pluginConfig.createTaskUrl; defaults to DashScope video synthesis endpoint."
+      },
+      "taskResultBaseUrl": {
+        "type": "string",
+        "description": "Override task result base URL from pluginConfig.taskResultBaseUrl; defaults to https://dashscope.aliyuncs.com/api/v1/tasks."
+      }
+    }
+  }
+}
