@@ -1,0 +1,16 @@
+{
+  "name": "@openclaw/wan-r2v-generator",
+  "version": "2026.3.28",
+  "description": "DashScope Wan R2V generator plugin for OpenClaw",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "install": {
+      "npmSpec": "@openclaw/wan-r2v-generator",
+      "localPath": "extensions/erlock/wan-r2v-generator",
+      "defaultChoice": "local"
+    }
+  }
+}
